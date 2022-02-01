@@ -47,7 +47,7 @@ class Form extends React.Component<{}, IJob>{
             }
         })
         .catch(error => {
-            alert("Se ha producido un error")
+            alert("There was an error processing the petition")
         })
         this.resetForm();
     }

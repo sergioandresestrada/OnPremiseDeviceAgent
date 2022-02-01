@@ -7,7 +7,7 @@ if len(sys.argv) != 2:
 else:
     puerto = int(sys.argv[1])
 
-print(f"Creando socket escuchando en el puerto {puerto}")
+print(f"Creating listening socket in port: {puerto}")
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 s.bind(("", puerto))
@@ -15,15 +15,15 @@ s.bind(("", puerto))
 s.listen()
 
 while True:
-    print("\nEsperando por un mensaje...")
+    print("\nWaiting for a messafe...")
     
     sd, origen = s.accept()
-    print("Se ha recibido una conexión")
+    print("A connection has been received")
 
     mensaje = sd.recv(1024).decode("utf-8")
 
-    print(f"Se ha recibido el mensaje: {mensaje}")
+    print(f"Message received: {mensaje}")
 
-    print("Se cierra el socket de datos")
+    print("Closing data socket")
     sd.close()
     

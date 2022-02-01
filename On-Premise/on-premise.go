@@ -118,8 +118,8 @@ func main() {
 			fmt.Println("    " + *msg.MessageId)
 			var message Message
 			json.Unmarshal([]byte(*msg.Body), &message)
-			fmt.Printf("Tipo del mensaje: %v\n", message.Type)
-			fmt.Printf("Cuerpo del mensaje : %v\n", message.Message)
+			fmt.Printf("Type of message: %v\n", message.Type)
+			fmt.Printf("Body of message: %v\n", message.Message)
 			enviaCliente(message.Message)
 		}
 	}
