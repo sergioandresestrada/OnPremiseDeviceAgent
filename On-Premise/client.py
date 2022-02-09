@@ -15,7 +15,7 @@ s.bind(("", puerto))
 s.listen()
 
 while True:
-    print("\nWaiting for a messafe...")
+    print("\nWaiting for a message...")
     
     sd, origen = s.accept()
     print("A connection has been received")
