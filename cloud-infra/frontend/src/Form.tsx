@@ -1,21 +1,31 @@
 
 import React, { FormEvent } from 'react';
-import { Form as FormRS, FormGroup, Input, Label} from 'reactstrap';
+import { Form as FormRS, FormGroup, FormText, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter} from 'reactstrap';
 
 enum Type {
     HEARTBEAT = "HEARTBEAT",
-    PLACEHOLDER1 = "PLACEHOLDER1",
-    PLACEHOLDER2 = "PLACEHOLDER2"
+    FILE = "FILE",
+    PLACEHOLDER1 = "PLACEHOLDER1"
 }
 
 const initialState = {
     message : '',
-    type : Type.HEARTBEAT
+    type : Type.HEARTBEAT,
+    file : undefined,
+
+    processingJob : false,
+    submitOutcome : ''
 }
+
+const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
 
 interface IJob{
     message : string,
-    type : Type
+    type : Type,
+    file? : File
+
+    processingJob : boolean
+    submitOutcome : string
 }
 
 class Form extends React.Component<{}, IJob>{ 
@@ -25,31 +35,79 @@ class Form extends React.Component<{}, IJob>{
         this.handleSubmit = this.handleSubmit.bind(this)
         this.handleChangeMessage = this.handleChangeMessage.bind(this)
         this.handleChangeType = this.handleChangeType.bind(this)
+        this.handleChangeFile = this.handleChangeFile.bind(this)
     }
 
     handleSubmit(event : FormEvent){
+
         event.preventDefault()
-        fetch("http://localhost:12345/message",{
-            method: "POST",
-            headers: {
-                "Content-Type": "aplication/json"
-            },
-            body: JSON.stringify({
-                type: this.state.type,
-                message: this.state.message
+
+        let fetchOptions : object = {}
+        let fullURL : string = ""
+
+        switch (this.state.type){
+            case "HEARTBEAT":
+                fullURL = URL + "/message"
+                fetchOptions = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "aplication/json"
+                    },
+                    body: JSON.stringify({
+                        type: this.state.type,
+                        message: this.state.message
+                    })
+                }
+                break
+                
+            case "FILE":
+                fullURL = URL + "/jobwithfile"
+                let formData = new FormData()
+                if (this.state.file === undefined){
+                    alert("Error getting the file")
+                    return
+                }
+                let data = JSON.stringify({
+                    type: this.state.type,
+                    message: this.state.message
+                })
+                formData.append("data", data)
+                formData.append("file", this.state.file)
+
+                fetchOptions = {
+                    method: "POST",
+                    body: formData
+                }
+                break
+        }
+
+        if (fullURL === "" || fetchOptions === {}) return
+
+        this.setState({
+            processingJob : true
+        })
+
+        fetch(fullURL, fetchOptions)
+        .then(response => {
+            let outcome = ""
+            if (response.status === 200){
+                outcome = "New job was sent successfully"
+            } else {
+                outcome = "There was a problem sending the new job"
+            }
+            this.setState({
+                submitOutcome : outcome,
+                processingJob : false
             })
         })
-        .then(response => {
-            if (response.status === 200){
-                alert("New job was sent")
-            } else {
-                alert("There was a problem sending the new job")
-            }
-        })
         .catch(error => {
-            alert("There was an error processing the petition")
+            let outcome = "There was an error processing the petition, please check the fields and try again"
+            this.setState({
+                submitOutcome : outcome,
+                processingJob : false
+            })
         })
-        this.resetForm();
+
     }
 
     resetForm = () => {
@@ -68,6 +126,15 @@ class Form extends React.Component<{}, IJob>{
         })
     }
 
+    handleChangeFile(event : React.ChangeEvent<HTMLInputElement>){
+        if (event.target.files != null){
+            this.setState({
+                file : event.target.files[0]
+            })
+        }
+        
+    }
+
     render() {
         return(
             <div>
@@ -84,10 +151,48 @@ class Form extends React.Component<{}, IJob>{
                             })}
                         </Input>
                     </FormGroup>
+                    {this.state.type === "FILE" && 
+                    <FormGroup>
+                        <Label for="file">File</Label>
+                        <Input id="file" name="file" type="file" onChange={this.handleChangeFile} required/>
+                        <FormText>Select the file to send to the job</FormText>
+                    </FormGroup>
+                    }
                     <FormGroup>
                         <Input type="submit" value="Submit" />
                     </FormGroup>
                 </FormRS>
+
+                {/* Renders a modal stating that the new job is being processed whenever a new now has been submitted until
+                    response from server is received */}
+                {this.state.processingJob &&
+                <Modal centered isOpen={true}>
+                    <ModalHeader>Processing</ModalHeader>
+                    <ModalBody> 
+                        <Spinner/>
+                        {' '}
+                        Your job is being sent, please wait
+                    </ModalBody>
+                </Modal>
+                }
+
+                {/* Renders a modal to inform about last job submission outcome*/}
+                {this.state.submitOutcome !== '' &&
+                <Modal centered isOpen={true}>
+                    <ModalHeader>Outcome</ModalHeader>
+                    <ModalBody> 
+                        {this.state.submitOutcome}
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            color="primary"
+                            onClick={this.resetForm}>
+                            OK!
+                        </Button>
+                    </ModalFooter>
+                </Modal>
+
+                }
             </div>
         )
     }

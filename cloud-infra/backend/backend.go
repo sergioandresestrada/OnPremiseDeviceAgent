@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+
+	"math/rand"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -13,37 +17,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
 type Message struct {
-	Type    string `json:"type"`
-	Message string `json:"message"`
-}
-
-func receiveMessage(w http.ResponseWriter, r *http.Request) {
-	requestBody, err := ioutil.ReadAll(r.Body)
-
-	if err != nil {
-		fmt.Println("Error while reading request body")
-	}
-
-	if r.Method == "OPTIONS" {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		return
-	}
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	var message Message
-	json.Unmarshal(requestBody, &message)
-	fmt.Printf("requestBody: %s\n", requestBody)
-	fmt.Printf("Message content received: %v\n", message.Message)
-	fmt.Printf("Type: %v\n", message.Type)
-
-	sendMessageToQueue(string(requestBody))
+	Type     string `json:"type"`
+	Message  string `json:"message"`
+	FileName string `json:"filename,omitempty"`
+	S3Name   string `json:"s3name,omitempty"`
 }
 
 type SQSSendMessageAPI interface {
@@ -56,12 +38,22 @@ type SQSSendMessageAPI interface {
 		optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 }
 
+type S3PutObjectAPI interface {
+	PutObject(ctx context.Context,
+		params *s3.PutObjectInput,
+		optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+}
+
 func GetQueueURL(c context.Context, api SQSSendMessageAPI, input *sqs.GetQueueUrlInput) (*sqs.GetQueueUrlOutput, error) {
 	return api.GetQueueUrl(c, input)
 }
 
 func SendMsg(c context.Context, api SQSSendMessageAPI, input *sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
 	return api.SendMessage(c, input)
+}
+
+func PutFile(c context.Context, api S3PutObjectAPI, input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
+	return api.PutObject(c, input)
 }
 
 func sendMessageToQueue(s string) {
@@ -114,10 +106,101 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Working")
 }
 
+func receiveMessage(w http.ResponseWriter, r *http.Request) {
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	var message Message
+	json.Unmarshal(requestBody, &message)
+	fmt.Printf("requestBody: %s\n", requestBody)
+	fmt.Printf("Message content received: %v\n", message.Message)
+	fmt.Printf("Type: %v\n", message.Type)
+
+	sendMessageToQueue(string(requestBody))
+}
+
+func jobWithFile(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseMultipartForm(64 << 20)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == "OPTIONS" {
+		return
+	}
+
+	var message Message
+	json.Unmarshal([]byte(r.FormValue("data")), &message)
+	fmt.Printf("requestBody: %s\n", r.FormValue("data"))
+	fmt.Printf("Message content received: %v\n", message.Message)
+	fmt.Printf("Type: %v\n", message.Type)
+
+	file, fileHeader, err := r.FormFile("file")
+	defer file.Close()
+
+	if err != nil {
+		fmt.Println("Error while reading the file")
+	}
+
+	BUCKETNAME := aws.String("sergiotfgbucket")
+
+	cfg, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithRegion("eu-west-3"))
+
+	if err != nil {
+		panic("configuration error, " + err.Error())
+	}
+
+	client := s3.NewFromConfig(cfg)
+
+	rand.Seed(time.Now().UnixNano())
+	message.FileName = fileHeader.Filename
+	message.S3Name = strconv.Itoa(rand.Int())
+
+	input := &s3.PutObjectInput{
+		Bucket: BUCKETNAME,
+		Key:    aws.String(message.S3Name),
+		Body:   file,
+	}
+
+	_, err = PutFile(context.TODO(), client, input)
+	if err != nil {
+		fmt.Println("Got error uploading file:")
+		fmt.Println(err)
+		return
+	}
+
+	s, err := json.Marshal(message)
+	if err != nil {
+		fmt.Println("Got an error creating the message to the queue:")
+		fmt.Println(err)
+		return
+	}
+	sendMessageToQueue(string(s))
+
+}
+
 func handleRequests() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", hello)
 	router.HandleFunc("/message", receiveMessage).Methods("POST", "OPTIONS")
+	router.HandleFunc("/jobwithfile", jobWithFile).Methods("POST", "OPTIONS")
 	log.Fatal(http.ListenAndServe(":12345", router))
 }
 
