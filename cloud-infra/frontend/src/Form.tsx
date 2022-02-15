@@ -4,7 +4,7 @@ import { Form as FormRS, FormGroup, FormText, Input, Label, Modal, ModalBody, Mo
 
 enum Type {
     HEARTBEAT = "HEARTBEAT",
-    FILE = "FILE",
+    JOB = "JOB",
     PLACEHOLDER1 = "PLACEHOLDER1"
 }
 
@@ -17,7 +17,7 @@ const initialState = {
     submitOutcome : ''
 }
 
-const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+const URL = "http://localhost:12345"
 
 interface IJob{
     message : string,
@@ -47,7 +47,7 @@ class Form extends React.Component<{}, IJob>{
 
         switch (this.state.type){
             case "HEARTBEAT":
-                fullURL = URL + "/message"
+                fullURL = URL + "/heartbeat"
                 fetchOptions = {
                     method: "POST",
                     headers: {
@@ -60,13 +60,17 @@ class Form extends React.Component<{}, IJob>{
                 }
                 break
                 
-            case "FILE":
-                fullURL = URL + "/jobwithfile"
-                let formData = new FormData()
+            case "JOB":
                 if (this.state.file === undefined){
                     alert("Error getting the file")
                     return
                 }
+                if(!this.isValidFile(this.state.file)){
+                    alert("Invalid file selected. Please select a PDF or STL file and try again")
+                    return
+                }
+                fullURL = URL + "/job"
+                let formData = new FormData()
                 let data = JSON.stringify({
                     type: this.state.type,
                     message: this.state.message
@@ -114,6 +118,23 @@ class Form extends React.Component<{}, IJob>{
         this.setState(initialState)
     }
 
+    isValidFile(file: File) : boolean{
+        var acceptedTypes = ["pdf", "stl"]
+
+        var re = /(?:\.([^.]+))?$/
+
+        var result = re.exec(file.name)
+        if (result === null) return false
+
+        var fileExtension = result[1]
+        if (!(acceptedTypes.indexOf(fileExtension) > -1)){
+            return false
+        }
+
+        return true
+    
+    }
+
     handleChangeMessage(event: React.ChangeEvent<HTMLInputElement>){
         this.setState({
             message : event.target.value
@@ -140,24 +161,27 @@ class Form extends React.Component<{}, IJob>{
             <div>
                 <FormRS onSubmit={this.handleSubmit}>
                     <FormGroup>
-                        <Label for='jobMessage'>Introduce the job to send</Label>
-                        <Input onChange={this.handleChangeMessage} type="text" id="jobMessage" value={this.state.message} required/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for='jobType'>Select the type of job</Label>
+                        <Label for='jobType'>Select the type of message to send</Label>
                         <Input id='jobType' value={this.state.type} onChange={this.handleChangeType} type="select">
                             {Object.keys(Type).map( i => {
                                 return <option key={i} value={i}>{i.charAt(0)+i.substring(1).toLowerCase()}</option>
                             })}
                         </Input>
                     </FormGroup>
-                    {this.state.type === "FILE" && 
+                    <FormGroup>
+                        <Label for='jobMessage'>Message to send</Label>
+                        <Input onChange={this.handleChangeMessage} type="text" id="jobMessage" value={this.state.message} required/>
+                    </FormGroup>
+                    {this.state.type === "JOB" && 
                     <FormGroup>
                         <Label for="file">File</Label>
-                        <Input id="file" name="file" type="file" onChange={this.handleChangeFile} required/>
+                        <Input id="file" name="file" type="file" 
+                            accept='.pdf, .stl' 
+                            onChange={this.handleChangeFile} required/>
                         <FormText>Select the file to send to the job</FormText>
                     </FormGroup>
                     }
+                    {/* application/pdf,application/x-pdf,application/x-bzpdf,application/x-gzpdf,*/ }
                     <FormGroup>
                         <Input type="submit" value="Submit" />
                     </FormGroup>
