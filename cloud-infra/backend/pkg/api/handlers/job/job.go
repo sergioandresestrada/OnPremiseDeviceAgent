@@ -1,6 +1,7 @@
 package job
 
 import (
+	"backend/pkg/api/utils"
 	objstorage "backend/pkg/obj_storage"
 	"backend/pkg/queue"
 	"backend/pkg/types"
@@ -21,10 +22,8 @@ func Job(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error while reading request body")
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
 	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
 		return
 	}
 
@@ -34,10 +33,17 @@ func Job(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
 
+	if message.Message == "" || message.Type != "JOB" {
+		utils.BadRequest(w)
+		return
+	}
+
 	file, fileHeader, err := r.FormFile("file")
 
 	if err != nil {
 		fmt.Println("Error while reading the file")
+		utils.BadRequest(w)
+		return
 	}
 
 	defer file.Close()
@@ -46,14 +52,28 @@ func Job(w http.ResponseWriter, r *http.Request) {
 	message.FileName = fileHeader.Filename
 	message.S3Name = strconv.Itoa(rand.Int())
 
-	objstorage.UploadFile(&file, message.S3Name)
+	err = objstorage.UploadFile(&file, message.S3Name)
+
+	if err != nil {
+		fmt.Println(err)
+		utils.ServerError(w)
+		return
+	}
 
 	s, err := json.Marshal(message)
 	if err != nil {
 		fmt.Println("Got an error creating the message to the queue:")
 		fmt.Println(err)
+		utils.ServerError(w)
 		return
 	}
-	queue.SendMessageToQueue(string(s))
 
+	err = queue.SendMessageToQueue(string(s))
+	if err != nil {
+		fmt.Println(err)
+		utils.ServerError(w)
+		return
+	}
+
+	utils.OKRequest(w)
 }

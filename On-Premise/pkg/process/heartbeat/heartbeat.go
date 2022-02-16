@@ -1,6 +1,7 @@
 package heartbeat
 
 import (
+	"errors"
 	"fmt"
 	"net"
 
@@ -9,13 +10,14 @@ import (
 
 type Message = types.Message
 
-func ProcessHeartbeat(msg Message) {
+func ProcessHeartbeat(msg Message) error {
 	fmt.Println("Processing Heartbeat Job")
 
-	sendToClient(msg.Message)
+	err := sendToClient(msg.Message)
+	return err
 }
 
-func sendToClient(message string) {
+func sendToClient(message string) error {
 	host := "localhost"
 	port := "9999"
 	conType := "tcp"
@@ -25,8 +27,8 @@ func sendToClient(message string) {
 	conn, err := net.Dial(conType, host+":"+port)
 
 	if err != nil {
-		fmt.Println("Error connecting:", err.Error())
-		panic(err)
+		err = errors.New("Error connecting:" + err.Error())
+		return err
 	}
 
 	fmt.Println("Connection established correctly")
@@ -34,8 +36,10 @@ func sendToClient(message string) {
 	_, err = conn.Write([]byte(message))
 
 	if err != nil {
-		fmt.Println("Error sending message:", err.Error())
-		panic(err)
+		err = errors.New("Error sending message:" + err.Error())
+		return err
 	}
 
+	// At this point err will be nil always
+	return err
 }

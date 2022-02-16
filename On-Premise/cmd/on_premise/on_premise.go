@@ -20,13 +20,25 @@ func main() {
 			var message Message
 			json.Unmarshal([]byte(*msg.Body), &message)
 
+			var err error = nil
+
 			switch message.Type {
 			case "HEARTBEAT":
-				hb.ProcessHeartbeat(message)
+				err = hb.ProcessHeartbeat(message)
 			case "FILE":
-				job.ProcessJob(message)
+				err = job.ProcessJob(message)
 			}
-			queue.RemoveMessage(msg)
+			if err != nil {
+				fmt.Printf("There was an error processing the message: %v\n", err.Error())
+				continue
+			}
+
+			err = queue.RemoveMessage(msg)
+			if err != nil {
+				fmt.Printf(err.Error())
+				continue
+			}
+
 			fmt.Printf("Message was processed and deleted successfully\n\n")
 		}
 

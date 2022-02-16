@@ -1,6 +1,7 @@
 package heartbeat
 
 import (
+	"backend/pkg/api/utils"
 	"backend/pkg/queue"
 	"backend/pkg/types"
 	"encoding/json"
@@ -16,12 +17,12 @@ func Heartbeat(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
 	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
 		return
 	}
 
@@ -31,5 +32,17 @@ func Heartbeat(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
 
-	queue.SendMessageToQueue(string(requestBody))
+	if message.Message == "" || message.Type != "HEARTBEAT" {
+		utils.BadRequest(w)
+		return
+	}
+
+	err = queue.SendMessageToQueue(string(requestBody))
+	if err != nil {
+		fmt.Println(err)
+		utils.ServerError(w)
+		return
+	}
+
+	utils.OKRequest(w)
 }

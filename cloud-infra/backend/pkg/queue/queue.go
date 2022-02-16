@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -51,15 +52,13 @@ func init() {
 
 	result, err := getQueueURL(context.TODO(), sqsClient, gQInput)
 	if err != nil {
-		fmt.Println("Got an error getting the queue URL:")
-		fmt.Println(err)
-		return
+		panic("Got an error getting the queue URL: " + err.Error())
 	}
 
 	queueURL = result.QueueUrl
 }
 
-func SendMessageToQueue(s string) {
+func SendMessageToQueue(s string) error {
 	sMInput := &sqs.SendMessageInput{
 
 		MessageBody:    aws.String(s),
@@ -69,10 +68,10 @@ func SendMessageToQueue(s string) {
 
 	resp, err := sendMsg(context.TODO(), sqsClient, sMInput)
 	if err != nil {
-		fmt.Println("Got an error sending the message:")
-		fmt.Println(err)
-		return
+		err = errors.New("Got an error sending the message to the queue: " + err.Error())
+		return err
 	}
 
 	fmt.Println("Sent message with ID: " + *resp.MessageId)
+	return nil
 }

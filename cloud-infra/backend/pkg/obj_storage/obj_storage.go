@@ -2,7 +2,7 @@ package objstorage
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"mime/multipart"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -38,7 +38,7 @@ func putFile(c context.Context, api S3PutObjectAPI, input *s3.PutObjectInput) (*
 	return api.PutObject(c, input)
 }
 
-func UploadFile(file *multipart.File, s3Name string) {
+func UploadFile(file *multipart.File, s3Name string) error {
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(BUCKETNAME),
 		Key:    aws.String(s3Name),
@@ -47,8 +47,8 @@ func UploadFile(file *multipart.File, s3Name string) {
 
 	_, err := putFile(context.TODO(), s3Client, input)
 	if err != nil {
-		fmt.Println("Got error uploading file:")
-		fmt.Println(err)
+		err = errors.New("Got error uploading file: " + err.Error())
 	}
 
+	return err
 }

@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -103,7 +104,7 @@ func ReceiveMessages() []types.Message {
 	return resp.Messages
 }
 
-func RemoveMessage(msg types.Message) {
+func RemoveMessage(msg types.Message) error {
 
 	dMInput := &sqs.DeleteMessageInput{
 		QueueUrl:      queueURL,
@@ -113,9 +114,9 @@ func RemoveMessage(msg types.Message) {
 	_, err := removeMessage(context.TODO(), sqsClient, dMInput)
 
 	if err != nil {
-		fmt.Println("Got an error deleting the message:")
-		fmt.Println(err)
-		return
+		err = errors.New("Got an error deleting the message from the queue: " + err.Error())
 	}
+
+	return err
 
 }

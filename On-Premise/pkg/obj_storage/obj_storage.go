@@ -2,6 +2,7 @@ package obj_storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -36,7 +37,7 @@ func init() {
 
 }
 
-func DownloadFile(message Message, fd *os.File) {
+func DownloadFile(message Message, fd *os.File) error {
 	fmt.Printf("Downloading file %s\n", message.FileName)
 
 	_, err := downloader.Download(context.TODO(), fd, &s3.GetObjectInput{
@@ -45,6 +46,8 @@ func DownloadFile(message Message, fd *os.File) {
 	})
 
 	if err != nil {
-		fmt.Println("Error while downloading the file")
+		err = errors.New("Error while downloading the file: " + err.Error())
 	}
+
+	return err
 }
