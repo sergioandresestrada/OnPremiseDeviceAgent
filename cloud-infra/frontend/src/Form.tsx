@@ -17,7 +17,7 @@ const initialState = {
     submitOutcome : ''
 }
 
-const URL = "http://localhost:12345"
+const URL = "http://192.168.1.208:12345"
 
 interface IJob{
     message : string,
@@ -105,6 +105,7 @@ class Form extends React.Component<{}, IJob>{
             })
         })
         .catch(error => {
+            alert(error)
             let outcome = "There was an error processing the petition, please check the fields and try again"
             this.setState({
                 submitOutcome : outcome,

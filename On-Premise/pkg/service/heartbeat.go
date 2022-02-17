@@ -1,17 +1,17 @@
-package heartbeat
+package service
 
 import (
 	"errors"
 	"fmt"
 	"net"
-
-	"On-Premise/pkg/types"
 )
 
-type Message = types.Message
-
-func ProcessHeartbeat(msg Message) error {
+func (s *Service) Heartbeat(msg Message) error {
 	fmt.Println("Processing Heartbeat Job")
+	if msg.Message == "" {
+		err := errors.New("some message's expected fields are missing")
+		return err
+	}
 
 	err := sendToClient(msg.Message)
 	return err

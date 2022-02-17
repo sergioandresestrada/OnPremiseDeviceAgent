@@ -1,30 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-
-	hb "backend/pkg/api/handlers/heartbeat"
-	"backend/pkg/api/handlers/job"
+	objstorage "backend/pkg/obj_storage"
+	"backend/pkg/queue"
+	"backend/pkg/server"
 
 	"github.com/gorilla/mux"
 )
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	fmt.Fprintf(w, "Working")
-}
-
-func handleRequests() {
+func setUpServer() {
 	router := mux.NewRouter()
-	router.HandleFunc("/", hello)
-	router.HandleFunc("/heartbeat", hb.Heartbeat).Methods("POST", "OPTIONS")
-	router.HandleFunc("/job", job.Job).Methods("POST", "OPTIONS")
-	log.Fatal(http.ListenAndServe(":12345", router))
+	queue := queue.NewQueueSQS()
+	objstorage := objstorage.NewObjStorageS3()
+	server := server.NewServer(queue, objstorage, router)
+
+	server.Routes()
+	server.ListenAndServe()
+
 }
 
 func main() {
-	handleRequests()
+	setUpServer()
 }

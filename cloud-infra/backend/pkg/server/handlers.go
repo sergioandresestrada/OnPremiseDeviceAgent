@@ -1,12 +1,11 @@
-package job
+package server
 
 import (
-	"backend/pkg/api/utils"
-	objstorage "backend/pkg/obj_storage"
-	"backend/pkg/queue"
 	"backend/pkg/types"
+	"backend/pkg/utils"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -15,7 +14,42 @@ import (
 
 type Message = types.Message
 
-func Job(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	var message Message
+	json.Unmarshal(requestBody, &message)
+	fmt.Printf("requestBody: %s\n", requestBody)
+	fmt.Printf("Message content received: %v\n", message.Message)
+	fmt.Printf("Type: %v\n", message.Type)
+
+	if message.Message == "" || message.Type != "HEARTBEAT" {
+		utils.BadRequest(w)
+		return
+	}
+
+	err = s.queue.SendMessage(string(requestBody))
+	if err != nil {
+		fmt.Println(err)
+		utils.ServerError(w)
+		return
+	}
+
+	utils.OKRequest(w)
+}
+
+func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(64 << 20)
 
 	if err != nil {
@@ -52,7 +86,7 @@ func Job(w http.ResponseWriter, r *http.Request) {
 	message.FileName = fileHeader.Filename
 	message.S3Name = strconv.Itoa(rand.Int())
 
-	err = objstorage.UploadFile(&file, message.S3Name)
+	err = s.obj_storage.UploadFile(&file, message.S3Name)
 
 	if err != nil {
 		fmt.Println(err)
@@ -60,7 +94,7 @@ func Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := json.Marshal(message)
+	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Println("Got an error creating the message to the queue:")
 		fmt.Println(err)
@@ -68,7 +102,7 @@ func Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = queue.SendMessageToQueue(string(s))
+	err = s.queue.SendMessage(string(messageJSON))
 	if err != nil {
 		fmt.Println(err)
 		utils.ServerError(w)

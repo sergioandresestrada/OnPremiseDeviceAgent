@@ -1,46 +1,19 @@
 package main
 
 import (
-	hb "On-Premise/pkg/process/heartbeat"
-	"On-Premise/pkg/process/job"
+	"On-Premise/pkg/obj_storage"
 	"On-Premise/pkg/queue"
-	"On-Premise/pkg/types"
-	"encoding/json"
-	"fmt"
+
+	"On-Premise/pkg/service"
 )
 
-type Message = types.Message
+func setUpService() {
+	queue := queue.NewQueueSQS()
+	obj_storage := obj_storage.NewObjStorageS3()
+	service := service.NewService(queue, obj_storage)
+	service.Run()
+}
 
 func main() {
-
-	for {
-		receivedMessages := queue.ReceiveMessages()
-
-		for _, msg := range receivedMessages {
-			var message Message
-			json.Unmarshal([]byte(*msg.Body), &message)
-
-			var err error = nil
-
-			switch message.Type {
-			case "HEARTBEAT":
-				err = hb.ProcessHeartbeat(message)
-			case "FILE":
-				err = job.ProcessJob(message)
-			}
-			if err != nil {
-				fmt.Printf("There was an error processing the message: %v\n", err.Error())
-				continue
-			}
-
-			err = queue.RemoveMessage(msg)
-			if err != nil {
-				fmt.Printf(err.Error())
-				continue
-			}
-
-			fmt.Printf("Message was processed and deleted successfully\n\n")
-		}
-
-	}
+	setUpService()
 }
