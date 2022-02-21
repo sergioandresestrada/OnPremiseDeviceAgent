@@ -36,6 +36,8 @@ func ValidateFile(file io.ReadSeeker, FileName string, MIMEType string) error {
 		}
 	case ".stl":
 		_, err := stl.ReadAll(file)
+		// need to set the reader back to the start of the file
+		file.Seek(0, 0)
 		return err
 	}
 
