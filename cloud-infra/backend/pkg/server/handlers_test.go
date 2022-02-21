@@ -8,7 +8,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -83,10 +85,10 @@ func TestJob(t *testing.T) {
 		expectedStatusCode int
 	}{
 		{nil, "", http.StatusBadRequest}, // empty request
-		{[]byte(`{"message":"placeholder", "type":"HEARTBEAT"}`), "", http.StatusBadRequest},                   // Wrong type
-		{[]byte(`{"type":"JOB"}`), "", http.StatusBadRequest},                                                  // Missing field
-		{[]byte(`{"message":"placeholder", "type":"JOB"}`), "", http.StatusBadRequest},                         // Missing file
-		{[]byte(`{"message":"placeholder", "type":"JOB"}`), "../test_files/sample.pdf", http.StatusBadRequest}, // All good
+		{[]byte(`{"message":"placeholder", "type":"HEARTBEAT"}`), "", http.StatusBadRequest},                                                 // Wrong type
+		{[]byte(`{"type":"JOB"}`), "", http.StatusBadRequest},                                                                                // Missing field
+		{[]byte(`{"message":"placeholder", "type":"JOB"}`), "", http.StatusBadRequest},                                                       // Missing file
+		{[]byte(`{"message":"placeholder", "type":"JOB", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "sample.pdf", http.StatusOK}, // All good
 	}
 
 	for i, tt := range tc {
@@ -95,13 +97,19 @@ func TestJob(t *testing.T) {
 			writer := multipart.NewWriter(body)
 
 			if tt.data != nil {
-				fw, _ := writer.CreateFormField("name")
+				fw, _ := writer.CreateFormField("data")
 				io.Copy(fw, strings.NewReader(string(tt.data)))
 			}
 
 			if tt.file != "" {
-				fw, _ := writer.CreateFormFile("file", tt.file)
-				file, err := os.Open(tt.file)
+				var fw io.Writer
+				switch filepath.Ext(tt.file) {
+				case ".pdf":
+					fw, _ = CustomCreateFormFile(writer, "file", tt.file, "application/pdf")
+				default:
+					fw, _ = writer.CreateFormFile("file", tt.file)
+				}
+				file, err := os.Open("../test_files/" + tt.file)
 				if err != nil {
 					t.Errorf("File %s not found in test folder", tt.file)
 				}
@@ -123,4 +131,12 @@ func TestJob(t *testing.T) {
 		})
 	}
 
+}
+
+func CustomCreateFormFile(w *multipart.Writer, fieldName string, fileName string, content_type string) (io.Writer, error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition",
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldName, fileName))
+	h.Set("Content-Type", content_type)
+	return w.CreatePart(h)
 }

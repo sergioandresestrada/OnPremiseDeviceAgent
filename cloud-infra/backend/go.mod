@@ -25,4 +25,5 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.13.0 // indirect
 	github.com/aws/smithy-go v1.10.0 // indirect
 	github.com/golang/mock v1.6.0
+	github.com/hschendel/stl v1.0.4
 )
