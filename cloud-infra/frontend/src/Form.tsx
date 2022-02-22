@@ -27,7 +27,8 @@ const initialState = {
     submitOutcome : ''
 }
 
-const URL = "http://192.168.1.208:12345"
+const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+//const URL = "http://192.168.1.208:12345"
 
 const REGEX_IPAddress = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
@@ -115,7 +116,7 @@ class Form extends React.Component<{}, IJob>{
             let outcome = ""
             switch(response.status){
                 case 200:
-                    outcome = "New job was sent successfully."
+                    outcome = "New " + this.state.type.charAt(0)+this.state.type.substring(1).toLowerCase()+ " was sent successfully."
                     break
                 case 400:
                     outcome = "Bad request. Check the fields and try again."

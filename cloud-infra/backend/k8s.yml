@@ -1,44 +1,43 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+    name: backend
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: backend
-  template:
-    metadata:
-      labels:
-        app: backend
-    spec:
-      containers:
-      - image: sergioandresestrada/cloud_backend:0.1
-        name: backend
-        env:
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: awscredentials
-              key: AWS_ACCESS_KEY_ID
-        - name: AWS_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: awscredentials
-              key: AWS_SECRET_ACCESS_KEY
+    replicas: 1
+    selector:
+        matchLabels:
+            app: backend
+    template:
+        metadata:
+            labels:
+                app: backend
+        spec:
+            containers:
+                - image: sergioandresestrada/cloud_backend:0.2
+                  name: backend
+                  env:
+                      - name: AWS_ACCESS_KEY_ID
+                        valueFrom:
+                            secretKeyRef:
+                                name: awscredentials
+                                key: AWS_ACCESS_KEY_ID
+                      - name: AWS_SECRET_ACCESS_KEY
+                        valueFrom:
+                            secretKeyRef:
+                                name: awscredentials
+                                key: AWS_SECRET_ACCESS_KEY
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend
-  annotations:
-    dev.okteto.com/auto-ingress: "true"
+    name: backend
+    annotations:
+        dev.okteto.com/auto-ingress: "true"
 spec:
-  type: ClusterIP  
-  ports:
-  - name: "backend"
-    port: 12345
-  selector:
-    app: backend
+    type: ClusterIP
+    ports:
+        - name: "backend"
+          port: 12345
+    selector:
+        app: backend
