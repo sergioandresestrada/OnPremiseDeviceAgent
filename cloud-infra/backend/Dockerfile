@@ -4,8 +4,9 @@ WORKDIR /app
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
-COPY *.go ./
-RUN go build -o /app/backend
+ADD ./cmd ./cmd
+ADD ./pkg ./pkg
+RUN go build -o /app/backend ./cmd/backend/backend.go
 
 FROM alpine as prod
 WORKDIR /app

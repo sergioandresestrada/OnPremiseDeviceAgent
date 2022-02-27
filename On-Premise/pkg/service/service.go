@@ -9,6 +9,7 @@ import (
 )
 
 type Message = types.Message
+type JobClient = types.JobClient
 
 type Service struct {
 	queue       queue.Queue

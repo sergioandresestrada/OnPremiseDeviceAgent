@@ -67,7 +67,21 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
 
-	if message.Message == "" || message.Type != "JOB" {
+	if message.Message == "" || message.Type != "JOB" || message.IPAddress == "" || message.Material == "" {
+		utils.BadRequest(w)
+		return
+	}
+
+	err = utils.ValidateMaterial(message.Material)
+	if err != nil {
+		fmt.Println(err.Error())
+		utils.BadRequest(w)
+		return
+	}
+
+	err = utils.ValidateIPAddress(message.IPAddress)
+	if err != nil {
+		fmt.Println(err.Error())
 		utils.BadRequest(w)
 		return
 	}
@@ -81,6 +95,13 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer file.Close()
+
+	err = utils.ValidateFile(file, fileHeader.Filename, fileHeader.Header.Get("Content-Type"))
+	if err != nil {
+		fmt.Println(err.Error())
+		utils.BadRequest(w)
+		return
+	}
 
 	rand.Seed(time.Now().UnixNano())
 	message.FileName = fileHeader.Filename

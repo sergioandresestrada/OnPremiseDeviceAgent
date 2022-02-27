@@ -6,6 +6,8 @@ import (
 	"net"
 )
 
+const CLIENT_HB_PORT = "44444"
+
 func (s *Service) Heartbeat(msg Message) error {
 	fmt.Println("Processing Heartbeat Job")
 	if msg.Message == "" {
@@ -19,7 +21,7 @@ func (s *Service) Heartbeat(msg Message) error {
 
 func sendToClient(message string) error {
 	host := "localhost"
-	port := "9999"
+	port := CLIENT_HB_PORT
 	conType := "tcp"
 
 	fmt.Printf("Connecting to %s on port %s.\n", host, port)
@@ -30,6 +32,8 @@ func sendToClient(message string) error {
 		err = errors.New("Error connecting:" + err.Error())
 		return err
 	}
+
+	defer conn.Close()
 
 	fmt.Println("Connection established correctly")
 

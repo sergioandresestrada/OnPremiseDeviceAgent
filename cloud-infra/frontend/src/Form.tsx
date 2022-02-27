@@ -8,21 +8,36 @@ enum Type {
     PLACEHOLDER1 = "PLACEHOLDER1"
 }
 
+enum Material {
+    "HR PA 11" = "HR PA 11", 
+    "HR PA 12GB" = "HR PA 12GB",
+    "HR TPA" = "HR TPA", 
+    "HR PP" = "HR PP", 
+    "HR PA 12" = "HR PA 12"
+}
+
 const initialState = {
     message : '',
     type : Type.HEARTBEAT,
     file : undefined,
+    material : Material['HR PA 11'],
+    IPAddress : "",
 
     processingJob : false,
     submitOutcome : ''
 }
 
-const URL = "http://192.168.1.208:12345"
+const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+//const URL = "http://192.168.1.208:12345"
+
+const REGEX_IPAddress = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
 interface IJob{
     message : string,
     type : Type,
-    file? : File
+    file? : File,
+    material? : string
+    IPAddress? : string
 
     processingJob : boolean
     submitOutcome : string
@@ -36,6 +51,9 @@ class Form extends React.Component<{}, IJob>{
         this.handleChangeMessage = this.handleChangeMessage.bind(this)
         this.handleChangeType = this.handleChangeType.bind(this)
         this.handleChangeFile = this.handleChangeFile.bind(this)
+        this.handleChangeMaterial = this.handleChangeMaterial.bind(this)
+        this.handleChangeIP = this.handleChangeIP.bind(this)
+        this.validateIP = this.validateIP.bind(this)
     }
 
     handleSubmit(event : FormEvent){
@@ -73,7 +91,9 @@ class Form extends React.Component<{}, IJob>{
                 let formData = new FormData()
                 let data = JSON.stringify({
                     type: this.state.type,
-                    message: this.state.message
+                    message: this.state.message,
+                    material: this.state.material,
+                    IPAddress: this.state.IPAddress
                 })
                 formData.append("data", data)
                 formData.append("file", this.state.file)
@@ -94,10 +114,16 @@ class Form extends React.Component<{}, IJob>{
         fetch(fullURL, fetchOptions)
         .then(response => {
             let outcome = ""
-            if (response.status === 200){
-                outcome = "New job was sent successfully"
-            } else {
-                outcome = "There was a problem sending the new job"
+            switch(response.status){
+                case 200:
+                    outcome = "New " + this.state.type.charAt(0)+this.state.type.substring(1).toLowerCase()+ " was sent successfully."
+                    break
+                case 400:
+                    outcome = "Bad request. Check the fields and try again."
+                    break
+                case 500:
+                    outcome = "Server error. Try again later."
+                    break
             }
             this.setState({
                 submitOutcome : outcome,
@@ -105,8 +131,7 @@ class Form extends React.Component<{}, IJob>{
             })
         })
         .catch(error => {
-            alert(error)
-            let outcome = "There was an error processing the petition, please check the fields and try again"
+            let outcome = "There was an error connecting to the server, please try again later."
             this.setState({
                 submitOutcome : outcome,
                 processingJob : false
@@ -128,7 +153,7 @@ class Form extends React.Component<{}, IJob>{
         if (result === null) return false
 
         var fileExtension = result[1]
-        if (!(acceptedTypes.indexOf(fileExtension) > -1)){
+        if (acceptedTypes.indexOf(fileExtension) === -1){
             return false
         }
 
@@ -154,7 +179,26 @@ class Form extends React.Component<{}, IJob>{
                 file : event.target.files[0]
             })
         }
-        
+    }
+
+    handleChangeMaterial(event: React.ChangeEvent<HTMLInputElement>){
+        this.setState({
+            material : event.target.value
+        })
+    }
+
+    handleChangeIP(event: React.ChangeEvent<HTMLInputElement>){
+        this.setState({
+            IPAddress : event.target.value
+        })
+    }
+
+    validateIP() : boolean{
+        if (this.state.IPAddress == null) return false
+        if(REGEX_IPAddress.test(this.state.IPAddress)){
+            return true
+        }
+        return false
     }
 
     render() {
@@ -174,6 +218,20 @@ class Form extends React.Component<{}, IJob>{
                         <Input onChange={this.handleChangeMessage} type="text" id="jobMessage" value={this.state.message} required/>
                     </FormGroup>
                     {this.state.type === "JOB" && 
+                    <div>
+                    <FormGroup>
+                        <Label for='material'>Select the material to use</Label>
+                        <Input id='material' value={this.state.material} onChange={this.handleChangeMaterial} type="select">
+                            {Object.keys(Material).map( i => {
+                                return <option key={i} value={i}>{i}</option>
+                            })}
+                        </Input>
+                    </FormGroup>
+                    <FormGroup>
+                        <Label for="IPAddress">Device IP Address</Label>
+                        <Input id="IPAddress" value={this.state.IPAddress} onChange={this.handleChangeIP}
+                                type="text" valid={this.validateIP()} invalid={!this.validateIP()}/>
+                    </FormGroup>
                     <FormGroup>
                         <Label for="file">File</Label>
                         <Input id="file" name="file" type="file" 
@@ -181,8 +239,9 @@ class Form extends React.Component<{}, IJob>{
                             onChange={this.handleChangeFile} required/>
                         <FormText>Select the file to send to the job</FormText>
                     </FormGroup>
+                    </div>
                     }
-                    {/* application/pdf,application/x-pdf,application/x-bzpdf,application/x-gzpdf,*/ }
+
                     <FormGroup>
                         <Input type="submit" value="Submit" />
                     </FormGroup>
