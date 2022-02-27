@@ -45,13 +45,13 @@ func (s *Service) Run() {
 			}
 
 			if err != nil {
-				fmt.Printf("There was an error processing the message: %v\n", err.Error())
+				fmt.Printf("There was an error processing the message: %v\n", err)
 				continue
 			}
 
 			err = s.queue.RemoveMessage(queueMsg)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Printf("%v\n", err)
 				continue
 			}
 

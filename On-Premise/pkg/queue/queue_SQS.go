@@ -2,7 +2,6 @@ package queue
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -67,7 +66,7 @@ func (queue *queueSQS) initialize() {
 		config.WithRegion("eu-west-3"))
 
 	if err != nil {
-		panic("configuration error, " + err.Error())
+		panic(fmt.Sprintf("configuration error: %v", err))
 	}
 
 	queue.sqsClient = sqs.NewFromConfig(cfg)
@@ -80,7 +79,7 @@ func (queue *queueSQS) initialize() {
 
 	result, err := getQueueURL(context.TODO(), queue.sqsClient, qInput)
 	if err != nil {
-		panic("Got an error getting the queue URL: " + err.Error())
+		panic(fmt.Sprintf("Got an error getting the queue URL: %v", err))
 	}
 
 	queue.queueURL = result.QueueUrl
@@ -104,8 +103,7 @@ func (queue *queueSQS) ReceiveMessages() []types.Message {
 	resp, err := getLPMessages(context.TODO(), queue.sqsClient, queue.mInput)
 
 	if err != nil {
-		fmt.Println("Got an error receiving messages:")
-		fmt.Println(err)
+		fmt.Printf("Got an error receiving messages: %v\n", err)
 		return nil
 	}
 
@@ -122,7 +120,7 @@ func (queue *queueSQS) RemoveMessage(msg types.Message) error {
 	_, err := removeMessage(context.TODO(), queue.sqsClient, dMInput)
 
 	if err != nil {
-		err = errors.New("Got an error deleting the message from the queue: " + err.Error())
+		err = fmt.Errorf("got an error deleting the message fron the queue: %w", err)
 	}
 
 	return err

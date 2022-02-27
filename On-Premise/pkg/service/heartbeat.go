@@ -29,7 +29,7 @@ func sendToClient(message string) error {
 	conn, err := net.Dial(conType, host+":"+port)
 
 	if err != nil {
-		err = errors.New("Error connecting:" + err.Error())
+		err = fmt.Errorf("error connecting: %w", err)
 		return err
 	}
 
@@ -40,7 +40,7 @@ func sendToClient(message string) error {
 	_, err = conn.Write([]byte(message))
 
 	if err != nil {
-		err = errors.New("Error sending message:" + err.Error())
+		err = fmt.Errorf("error sending message: %w", err)
 		return err
 	}
 

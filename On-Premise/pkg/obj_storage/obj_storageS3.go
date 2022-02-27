@@ -2,7 +2,6 @@ package obj_storage
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -33,7 +32,7 @@ func (obj *objStorageS3) Initialize() {
 		config.WithRegion("eu-west-3"))
 
 	if err != nil {
-		panic("Object storage configuration error, " + err.Error())
+		panic(fmt.Sprintf("Object storage configuration error: %v", err))
 	}
 
 	obj.s3Client = s3.NewFromConfig(cfg)
@@ -49,7 +48,7 @@ func (obj *objStorageS3) DownloadFile(message Message, fd *os.File) error {
 	})
 
 	if err != nil {
-		err = errors.New("Error while downloading the file: " + err.Error())
+		err = fmt.Errorf("error while downloading the file: %w", err)
 	}
 
 	return err

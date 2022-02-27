@@ -2,7 +2,7 @@ package objstorage
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"mime/multipart"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -36,7 +36,7 @@ func (obj *objStorageS3) initialize() {
 		config.WithRegion("eu-west-3"))
 
 	if err != nil {
-		panic("configuration error, " + err.Error())
+		panic(fmt.Sprintf("Configuration error: %v\n", err))
 	}
 
 	obj.s3Client = s3.NewFromConfig(cfg)
@@ -55,7 +55,7 @@ func (obj *objStorageS3) UploadFile(file *multipart.File, s3Name string) error {
 
 	_, err := putFile(context.TODO(), obj.s3Client, input)
 	if err != nil {
-		err = errors.New("Got error uploading file: " + err.Error())
+		err = fmt.Errorf("got an error uploading the file: %w", err)
 	}
 
 	return err

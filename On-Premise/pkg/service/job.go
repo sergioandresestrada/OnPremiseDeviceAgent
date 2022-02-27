@@ -20,14 +20,14 @@ func (s *Service) Job(msg Message) error {
 
 	fd, err := os.Create("onPremiseFiles/" + msg.FileName)
 	if err != nil {
-		err = errors.New("Error while creating the file: " + err.Error())
+		err = fmt.Errorf("error while creating the file: %w", err)
 		return err
 	}
 	defer fd.Close()
 
 	err = s.obj_storage.DownloadFile(msg, fd)
 	if err != nil {
-		err = errors.New("Error downloading the file: " + err.Error())
+		err = fmt.Errorf("error downloading the file: %w", err)
 		return err
 	}
 
