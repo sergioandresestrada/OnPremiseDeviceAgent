@@ -1,0 +1,330 @@
+{
+	"Identification": {
+		"Version": "1.7.0.0",
+		"Date": "2022-02-11T15:07:58Z",
+		"Fields": {
+			"ModelName": "HP Jet Fusion 5210 3D Printer",
+			"ModelNumber": "5210 Printer",
+			"PartNumber": "3FW26A",
+			"Manufacturer": "HP Inc.",
+			"SerialNumber": "HPSIMCRACRT1",
+			"FriendlyName": "Crait 5210",
+			"DeviceRegion": "unknown",
+			"FwReleaseName": "CRJDCR_16_21_28.56",
+			"FwReleaseDate": "2022-02-03T10:12:00Z",
+			"InstalledRAM": {
+				"Value": 3790,
+				"Units": "MB"
+			},
+			"InstalledHDD": {
+				"Value": 0,
+				"Units": "GB"
+			},
+			"DeviceType": {
+				"Name": "Printer",
+				"Version": "1.0",
+				"Namespace": "http://www.hp.com/schemas/hpmjf/printer/v1_0"
+			},
+			"FwInstallationDate": "2022-02-03T17:51:00Z"
+		},
+		"PrinterProperties": {
+			"BuildPlatforms": {
+				"BuildPlatform": {
+					"MaxPlatform": {
+						"P1": {
+							"X": 0.000000,
+							"Y": 0.000000,
+							"Z": 0.000000
+						},
+						"P2": {
+							"X": 450000.000000,
+							"Y": 350000.000000,
+							"Z": 425000.000000
+						},
+						"Units": "micron"
+					},
+					"UsablePlatform": {
+						"P1": {
+							"X": 35000.000000,
+							"Y": 33000.000000,
+							"Z": 16920.000000
+						},
+						"P2": {
+							"X": 415000.000000,
+							"Y": 317000.000000,
+							"Z": 396920.000000
+						},
+						"Units": "micron"
+					},
+					"PlatformAxes": {
+						"XAxis": "Depth",
+						"YAxis": "Width",
+						"ZAxis": "Height"
+					}
+				}
+			},
+			"ContentFormats": {
+				"ContentFormat": [
+					{
+						"Name": "3MF",
+						"Version": "1.2.3",
+						"Namespace": "http://schemas.microsoft.com/3dmanufacturing/core/2015/02",
+						"SupportedExtensions": {
+							"SupportedExtension": [
+								{
+									"Name": "Production",
+									"Version": "1.2",
+									"Namespace": "http://schemas.microsoft.com/3dmanufacturing/production/2015/06",
+									"Namespaces": {
+										"Namespace": "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+									}
+								},
+								{
+									"Name": "Beam Lattice",
+									"Version": "1.1",
+									"Namespace": "http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02",
+									"Namespaces": {
+										"Namespace": [
+											"http://schemas.microsoft.com/3dmanufacturing/beamlattice/2017/02",
+											"http://schemas.microsoft.com/3dmanufacturing/beamlattice/balls/2020/07"
+										]
+									}
+								},
+								{
+									"Name": "Part Optimization",
+									"Version": "1.0.0",
+									"Namespace": "http://www.hp.com/schemas/3dmanufacturing/partoptimization/2019/04",
+									"Namespaces": {
+										"Namespace": "http://www.hp.com/schemas/3dmanufacturing/partoptimization/2019/04"
+									}
+								},
+								{
+									"Name": "Secure Content",
+									"Version": "1.0.3",
+									"Namespace": "http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04",
+									"Namespaces": {
+										"Namespace": "http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"
+									}
+								}
+							]
+						},
+						"RequiredExtensions": {
+							"RequiredExtension": {
+								"Name": "Production",
+								"Version": "1.2",
+								"Namespace": "http://schemas.microsoft.com/3dmanufacturing/production/2015/06",
+								"Namespaces": {
+									"Namespace": "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
+								}
+							}
+						},
+						"Namespaces": {
+							"Namespace": "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+						}
+					},
+					{
+						"Name": "SVX",
+						"Version": "1.0",
+						"Namespace": "N/A",
+						"SupportedExtensions": null,
+						"RequiredExtensions": null,
+						"Namespaces": {
+							"Namespace": "N/A"
+						}
+					}
+				]
+			},
+			"ColorSupported": "false",
+			"JobAutoDelete": "false"
+		},
+		"Materials": {
+			"Material": [
+				{
+					"ID": "1000",
+					"Name": {
+						"@hasStringResource": "true",
+						"#text": "MaterialHP3DHRPA12"
+					},
+					"Default": true,
+					"BuildPlatform": {
+						"UsablePlatform": {
+							"P1": {
+								"X": 35000.000000,
+								"Y": 33000.000000,
+								"Z": 16920.000000
+							},
+							"P2": {
+								"X": 415000.000000,
+								"Y": 317000.000000,
+								"Z": 396920.000000
+							},
+							"Units": "micron"
+						},
+						"PlatformAxes": {
+							"XAxis": "Depth",
+							"YAxis": "Width",
+							"ZAxis": "Height"
+						}
+					},
+					"Links": {
+						"Link": [
+							{
+								"@method": "GET",
+								"@rel": "material",
+								"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/materials/1000"
+							}
+						]
+					}
+				},
+				{
+					"ID": "1001",
+					"Name": {
+						"@hasStringResource": "true",
+						"#text": "MaterialHP3DHRPA11"
+					},
+					"Default": false,
+					"BuildPlatform": {
+						"UsablePlatform": {
+							"P1": {
+								"X": 35000.000000,
+								"Y": 33000.000000,
+								"Z": 16920.000000
+							},
+							"P2": {
+								"X": 415000.000000,
+								"Y": 317000.000000,
+								"Z": 396920.000000
+							},
+							"Units": "micron"
+						},
+						"PlatformAxes": {
+							"XAxis": "Depth",
+							"YAxis": "Width",
+							"ZAxis": "Height"
+						}
+					},
+					"Links": {
+						"Link": [
+							{
+								"@method": "GET",
+								"@rel": "material",
+								"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/materials/1001"
+							}
+						]
+					}
+				},
+				{
+					"ID": "1002",
+					"Name": {
+						"@hasStringResource": "true",
+						"#text": "MaterialHP3DHRPA12GB"
+					},
+					"Default": false,
+					"BuildPlatform": {
+						"UsablePlatform": {
+							"P1": {
+								"X": 35000.000000,
+								"Y": 33000.000000,
+								"Z": 16920.000000
+							},
+							"P2": {
+								"X": 415000.000000,
+								"Y": 317000.000000,
+								"Z": 396920.000000
+							},
+							"Units": "micron"
+						},
+						"PlatformAxes": {
+							"XAxis": "Depth",
+							"YAxis": "Width",
+							"ZAxis": "Height"
+						}
+					},
+					"Links": {
+						"Link": [
+							{
+								"@method": "GET",
+								"@rel": "material",
+								"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/materials/1002"
+							}
+						]
+					}
+				},
+				{
+					"ID": "1200",
+					"Name": {
+						"@hasStringResource": "true",
+						"#text": "MaterialHP3DHRPP"
+					},
+					"Default": false,
+					"BuildPlatform": {
+						"UsablePlatform": {
+							"P1": {
+								"X": 35000.000000,
+								"Y": 33000.000000,
+								"Z": 21920.000000
+							},
+							"P2": {
+								"X": 415000.000000,
+								"Y": 317000.000000,
+								"Z": 391920.000000
+							},
+							"Units": "micron"
+						},
+						"PlatformAxes": {
+							"XAxis": "Depth",
+							"YAxis": "Width",
+							"ZAxis": "Height"
+						}
+					},
+					"Links": {
+						"Link": [
+							{
+								"@method": "GET",
+								"@rel": "material",
+								"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/materials/1200"
+							}
+						]
+					}
+				},
+				{
+					"ID": "1302",
+					"Name": {
+						"@hasStringResource": "true",
+						"#text": "MaterialUltrasintTPU01"
+					},
+					"Default": false,
+					"BuildPlatform": {
+						"UsablePlatform": {
+							"P1": {
+								"X": 35000.000000,
+								"Y": 33000.000000,
+								"Z": 16920.000000
+							},
+							"P2": {
+								"X": 415000.000000,
+								"Y": 317000.000000,
+								"Z": 396920.000000
+							},
+							"Units": "micron"
+						},
+						"PlatformAxes": {
+							"XAxis": "Depth",
+							"YAxis": "Width",
+							"ZAxis": "Height"
+						}
+					},
+					"Links": {
+						"Link": [
+							{
+								"@method": "GET",
+								"@rel": "material",
+								"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/materials/1302"
+							}
+						]
+					}
+				}
+			]
+		}
+	}
+}
