@@ -1,12 +1,13 @@
 package service
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
-	"net"
+	"net/http"
 )
 
-const CLIENT_HB_PORT = "44444"
+const CLIENT_HB_PORT = "55555"
 
 func (s *Service) Heartbeat(msg Message) error {
 	fmt.Println("Processing Heartbeat Job")
@@ -20,30 +21,24 @@ func (s *Service) Heartbeat(msg Message) error {
 }
 
 func sendToClient(message string) error {
-	host := "localhost"
+	host := "http://127.0.0.1"
 	port := CLIENT_HB_PORT
-	conType := "tcp"
 
-	fmt.Printf("Connecting to %s on port %s.\n", host, port)
+	fmt.Printf("sending heartbeat to %s.\n", host)
 
-	conn, err := net.Dial(conType, host+":"+port)
+	res, err := http.Post(host+":"+port+"/heartbeat", "text/plain", bytes.NewBufferString(message))
 
 	if err != nil {
-		err = fmt.Errorf("error connecting: %w", err)
+		err = fmt.Errorf("error performing the petition: %w", err)
 		return err
 	}
 
-	defer conn.Close()
-
-	fmt.Println("Connection established correctly")
-
-	_, err = conn.Write([]byte(message))
-
-	if err != nil {
-		err = fmt.Errorf("error sending message: %w", err)
+	if res.StatusCode != 200 {
+		err = fmt.Errorf("error in the response: status code -> %v", res.StatusCode)
 		return err
 	}
 
-	// At this point err will be nil always
-	return err
+	fmt.Println("Heartbeat sent and response received correctly.")
+	return nil
+
 }
