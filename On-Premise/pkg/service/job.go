@@ -20,7 +20,7 @@ const CLIENT_JOB_PORT = "55555"
 
 func (s *Service) Job(msg Message) error {
 
-	if msg.FileName == "" || msg.Message == "" || msg.S3Name == "" || msg.Material == "" || msg.IPAddress == "" {
+	if msg.FileName == "" || msg.S3Name == "" || msg.Material == "" || msg.IPAddress == "" {
 		err := errors.New("some message's expected fields are missing")
 		return err
 	}

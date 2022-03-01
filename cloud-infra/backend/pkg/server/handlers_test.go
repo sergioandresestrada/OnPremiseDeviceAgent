@@ -85,10 +85,10 @@ func TestJob(t *testing.T) {
 		expectedStatusCode int
 	}{
 		{nil, "", http.StatusBadRequest}, // empty request
-		{[]byte(`{"message":"placeholder", "type":"HEARTBEAT"}`), "", http.StatusBadRequest},                                                 // Wrong type
-		{[]byte(`{"type":"JOB"}`), "", http.StatusBadRequest},                                                                                // Missing field
-		{[]byte(`{"message":"placeholder", "type":"JOB"}`), "", http.StatusBadRequest},                                                       // Missing file
-		{[]byte(`{"message":"placeholder", "type":"JOB", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "sample.pdf", http.StatusOK}, // All good
+		{[]byte(`{"type":"HEARTBEAT", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "", http.StatusBadRequest}, // Wrong type
+		{[]byte(`{"type":"JOB"}`), "", http.StatusBadRequest},                                                           // Missing field
+		{[]byte(`{"type":"JOB", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "", http.StatusBadRequest},       // Missing file
+		{[]byte(`{"type":"JOB", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "sample.pdf", http.StatusOK},     // All good
 	}
 
 	for i, tt := range tc {
