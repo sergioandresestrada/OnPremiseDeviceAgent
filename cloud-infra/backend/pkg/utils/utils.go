@@ -59,3 +59,12 @@ func ValidateIPAddress(ip string) error {
 	}
 	return nil
 }
+
+func ValidateUploadInfo(info string) error {
+	switch info {
+	case "Jobs", "Identification":
+		return nil
+	default:
+		return errors.New("invalid info requested")
+	}
+}

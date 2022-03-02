@@ -3,7 +3,7 @@ package objstorage
 import (
 	"context"
 	"fmt"
-	"mime/multipart"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -46,11 +46,11 @@ func putFile(c context.Context, api S3PutObjectAPI, input *s3.PutObjectInput) (*
 	return api.PutObject(c, input)
 }
 
-func (obj *objStorageS3) UploadFile(file *multipart.File, s3Name string) error {
+func (obj *objStorageS3) UploadFile(file io.Reader, s3Name string) error {
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(BUCKETNAME),
 		Key:    aws.String(s3Name),
-		Body:   *file,
+		Body:   file,
 	}
 
 	_, err := putFile(context.TODO(), obj.s3Client, input)

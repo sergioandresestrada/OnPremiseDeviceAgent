@@ -1,7 +1,9 @@
 package objstorage
 
-import "mime/multipart"
+import (
+	"io"
+)
 
 type Obj_storage interface {
-	UploadFile(*multipart.File, string) error
+	UploadFile(io.Reader, string) error
 }
