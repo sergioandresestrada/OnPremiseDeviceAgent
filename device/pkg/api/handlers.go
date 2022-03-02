@@ -24,6 +24,8 @@ func (s *Server) Jobs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(files)
+
+	fmt.Println("Served Jobs JSON file")
 }
 
 func (s *Server) Identification(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +41,8 @@ func (s *Server) Identification(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(files)
+
+	fmt.Println("Served Identification JSON file")
 }
 
 func (s *Server) ReceiveJob(w http.ResponseWriter, r *http.Request) {

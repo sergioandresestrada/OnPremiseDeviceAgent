@@ -39,6 +39,8 @@ func (s *Service) Run() {
 				err = s.Heartbeat(parsedMessage)
 			case "JOB":
 				err = s.Job(parsedMessage)
+			case "UPLOAD":
+				err = s.Upload(parsedMessage)
 			default:
 				fmt.Println("The received message is invalid")
 				continue

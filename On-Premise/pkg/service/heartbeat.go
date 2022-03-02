@@ -10,7 +10,7 @@ import (
 const CLIENT_HB_PORT = "55555"
 
 func (s *Service) Heartbeat(msg Message) error {
-	fmt.Println("Processing Heartbeat Job")
+	fmt.Println("Processing Heartbeat")
 	if msg.Message == "" {
 		err := errors.New("some message's expected fields are missing")
 		return err

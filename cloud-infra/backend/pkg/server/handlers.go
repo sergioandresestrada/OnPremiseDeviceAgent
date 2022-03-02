@@ -36,7 +36,7 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 
 	var message Message
 	json.Unmarshal(requestBody, &message)
-	fmt.Printf("requestBody: %s\n", requestBody)
+	fmt.Printf("\nrequestBody: %s\n", requestBody)
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
 
@@ -69,7 +69,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 
 	var message Message
 	json.Unmarshal([]byte(r.FormValue("data")), &message)
-	fmt.Printf("requestBody: %s\n", r.FormValue("data"))
+	fmt.Printf("\nrequestBody: %s\n", r.FormValue("data"))
 	fmt.Printf("Type: %v\n", message.Type)
 
 	if message.Type != "JOB" || message.IPAddress == "" || message.Material == "" {
@@ -173,9 +173,9 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Received Type: %v\n", message.Type)
+	fmt.Printf("\nReceived Type: %v\n", message.Type)
 	fmt.Printf("Requested information: %v\n", message.UploadInfo)
-	fmt.Printf("Device to request info from: %v\n\n", message.IPAddress)
+	fmt.Printf("Device to request info from: %v\n", message.IPAddress)
 
 	message.UploadURL = BACKEND_URL + "/upload" + message.UploadInfo
 
@@ -211,7 +211,7 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	deviceIP := r.Header.Get("X-Device")
-	fmt.Printf("Received Identification JSON from device: %v\n", deviceIP)
+	fmt.Printf("\nReceived Identification JSON from device: %v\n", deviceIP)
 
 	fileName := "Identification-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
 	file, err := os.Create(fileName)
@@ -254,7 +254,7 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	deviceIP := r.Header.Get("X-Device")
-	fmt.Printf("Received Jobs JSON from device: %v\n", deviceIP)
+	fmt.Printf("\nReceived Jobs JSON from device: %v\n", deviceIP)
 
 	fileName := "Jobs-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
 	file, err := os.Create(fileName)
