@@ -35,7 +35,13 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var message Message
-	json.Unmarshal(requestBody, &message)
+	err = json.Unmarshal(requestBody, &message)
+	if err != nil {
+		fmt.Println("Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
 	fmt.Printf("\nrequestBody: %s\n", requestBody)
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
@@ -68,7 +74,12 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var message Message
-	json.Unmarshal([]byte(r.FormValue("data")), &message)
+	err = json.Unmarshal([]byte(r.FormValue("data")), &message)
+	if err != nil {
+		fmt.Println("Invalid JSON provided as data")
+		utils.BadRequest(w)
+		return
+	}
 	fmt.Printf("\nrequestBody: %s\n", r.FormValue("data"))
 	fmt.Printf("Type: %v\n", message.Type)
 
@@ -151,8 +162,19 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
+		return
+	}
+
 	var message Message
-	json.Unmarshal(requestBody, &message)
+	err = json.Unmarshal(requestBody, &message)
+	if err != nil {
+		fmt.Println("Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
 
 	if message.Type != "UPLOAD" || message.IPAddress == "" || message.UploadInfo == "" {
 		utils.BadRequest(w)
@@ -201,6 +223,7 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		fmt.Println("Invalid request content type")
 		utils.BadRequest(w)
+		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -210,7 +233,15 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 		utils.BadRequest(w)
 		return
 	}
+
 	deviceIP := r.Header.Get("X-Device")
+
+	if deviceIP == "" {
+		fmt.Println("Device IP Header missing in the request")
+		utils.BadRequest(w)
+		return
+	}
+
 	fmt.Printf("\nReceived Identification JSON from device: %v\n", deviceIP)
 
 	fileName := "Identification-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
@@ -244,6 +275,7 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		fmt.Println("Invalid request content type")
 		utils.BadRequest(w)
+		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -253,7 +285,15 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 		utils.BadRequest(w)
 		return
 	}
+
 	deviceIP := r.Header.Get("X-Device")
+
+	if deviceIP == "" {
+		fmt.Println("Device IP Header missing in the request")
+		utils.BadRequest(w)
+		return
+	}
+
 	fmt.Printf("\nReceived Jobs JSON from device: %v\n", deviceIP)
 
 	fileName := "Jobs-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
