@@ -33,8 +33,8 @@ const initialState = {
     submitOutcome : ''
 }
 
-//const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
-const URL = "http://192.168.1.208:12345"
+const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+//const URL = "http://192.168.1.208:12345"
 
 const REGEX_IPAddress = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
@@ -77,7 +77,7 @@ class Form extends React.Component<{}, IJob>{
                 fetchOptions = {
                     method: "POST",
                     headers: {
-                        "Content-Type": "aplication/json"
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         type: this.state.type,
@@ -124,7 +124,7 @@ class Form extends React.Component<{}, IJob>{
                 fetchOptions = {
                     method: "POST",
                     headers: {
-                        "Content-Type": "aplication/json"
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         type: this.state.type,
