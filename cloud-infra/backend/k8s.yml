@@ -13,7 +13,7 @@ spec:
                 app: backend
         spec:
             containers:
-                - image: sergioandresestrada/cloud_backend:0.2
+                - image: sergioandresestrada/cloud_backend:0.3
                   name: backend
                   env:
                       - name: AWS_ACCESS_KEY_ID
@@ -26,6 +26,14 @@ spec:
                             secretKeyRef:
                                 name: awscredentials
                                 key: AWS_SECRET_ACCESS_KEY
+                      - name: SERVER_URL
+                        value: "https://backend-sergioandresestrada.cloud.okteto.net"
+
+                      - name: SQS_QUEUE_NAME
+                        value: "test.fifo"
+
+                      - name: S3_BUCKET_NAME
+                        value: "sergiotfgbucket"
 
 ---
 apiVersion: v1

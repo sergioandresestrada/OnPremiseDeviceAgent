@@ -4,18 +4,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-const (
-	BUCKETNAME = "sergiotfgbucket"
-)
-
 type objStorageS3 struct {
-	s3Client *s3.Client
+	s3Client   *s3.Client
+	BUCKETNAME string
 }
 
 func NewObjStorageS3() *objStorageS3 {
@@ -39,6 +37,12 @@ func (obj *objStorageS3) initialize() {
 		panic(fmt.Sprintf("Configuration error: %v\n", err))
 	}
 
+	_, ok := os.LookupEnv("S3_BUCKET_NAME")
+	if !ok {
+		panic("Environment variable S3_BUCKET_NAME does not exist")
+	}
+	obj.BUCKETNAME = os.Getenv("S3_BUCKET_NAME")
+
 	obj.s3Client = s3.NewFromConfig(cfg)
 }
 
@@ -48,7 +52,7 @@ func putFile(c context.Context, api S3PutObjectAPI, input *s3.PutObjectInput) (*
 
 func (obj *objStorageS3) UploadFile(file io.Reader, s3Name string) error {
 	input := &s3.PutObjectInput{
-		Bucket: aws.String(BUCKETNAME),
+		Bucket: aws.String(obj.BUCKETNAME),
 		Key:    aws.String(s3Name),
 		Body:   file,
 	}

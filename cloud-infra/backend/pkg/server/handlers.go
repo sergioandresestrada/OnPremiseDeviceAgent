@@ -18,8 +18,6 @@ import (
 
 type Message = types.Message
 
-const BACKEND_URL = "http://192.168.1.208:12345"
-
 func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 
@@ -199,7 +197,7 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Requested information: %v\n", message.UploadInfo)
 	fmt.Printf("Device to request info from: %v\n", message.IPAddress)
 
-	message.UploadURL = BACKEND_URL + "/upload" + message.UploadInfo
+	message.UploadURL = s.serverURL + "/upload" + message.UploadInfo
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {

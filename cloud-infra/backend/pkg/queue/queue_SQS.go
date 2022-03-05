@@ -3,14 +3,11 @@ package queue
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-)
-
-const (
-	queueName = "test.fifo"
 )
 
 type queueSQS struct {
@@ -52,6 +49,11 @@ func (queue *queueSQS) initialize() {
 	}
 
 	queue.sqsClient = sqs.NewFromConfig(cfg)
+
+	queueName, ok := os.LookupEnv("SQS_QUEUE_NAME")
+	if !ok {
+		panic("Environment variable SQS_QUEUE_NAME does not exist.")
+	}
 
 	gQInput := &sqs.GetQueueUrlInput{
 		QueueName: aws.String(queueName),
