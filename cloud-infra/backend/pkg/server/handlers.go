@@ -234,10 +234,18 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !json.Valid(body) {
+		fmt.Println("Invalid JSON as body")
+		utils.BadRequest(w)
+		return
+	}
+
 	deviceIP := r.Header.Get("X-Device")
 
-	if deviceIP == "" {
-		fmt.Println("Device IP Header missing in the request")
+	err = utils.ValidateIPAddress(deviceIP)
+
+	if err != nil {
+		fmt.Println("Device IP Header missing or invalid IP address in the request")
 		utils.BadRequest(w)
 		return
 	}
@@ -286,10 +294,18 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !json.Valid(body) {
+		fmt.Println("Invalid JSON as body")
+		utils.BadRequest(w)
+		return
+	}
+
 	deviceIP := r.Header.Get("X-Device")
 
-	if deviceIP == "" {
-		fmt.Println("Device IP Header missing in the request")
+	err = utils.ValidateIPAddress(deviceIP)
+
+	if err != nil {
+		fmt.Println("Device IP Header missing or invalid IP address in the request")
 		utils.BadRequest(w)
 		return
 	}

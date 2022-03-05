@@ -186,3 +186,91 @@ func TestUpload(t *testing.T) {
 		})
 	}
 }
+
+func TestUploadIdentification(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	// Mocked queue not used in this handler but we need to pass one to the server struct
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+
+	// The mocked object storage will return nil as error when called with any values
+	mockObjStorage.EXPECT().UploadFile(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	router := mux.NewRouter()
+
+	server := NewServer(mockQueue, mockObjStorage, router)
+	server.Routes()
+
+	var tc = []struct {
+		body               []byte
+		content_type       string
+		expectedStatusCode int
+		deviceIP           string
+		testName           string
+	}{
+		{[]byte(`{}`), "text/plain", http.StatusBadRequest, "127.0.0.1", "Invalid content type"},
+		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "127.0.0.1", "Invalid JSON format"},
+		{[]byte(`{"identification": "placeholder"}`), "application/json", http.StatusBadRequest, "999.999.9.9", "Invalid IP address"},
+		{[]byte(`{"identification": "placeholder"}`), "application/json", http.StatusOK, "127.0.0.1", "Good request"},
+	}
+
+	for i, tt := range tc {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			req := httptest.NewRequest("POST", "/uploadIdentification", bytes.NewBuffer(tt.body))
+			req.Header.Set("X-Device", tt.deviceIP)
+			req.Header.Set("Content-Type", tt.content_type)
+
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestUploadJobs(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	// Mocked queue not used in this handler but we need to pass one to the server struct
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+
+	// The mocked object storage will return nil as error when called with any values
+	mockObjStorage.EXPECT().UploadFile(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	router := mux.NewRouter()
+
+	server := NewServer(mockQueue, mockObjStorage, router)
+	server.Routes()
+
+	var tc = []struct {
+		body               []byte
+		content_type       string
+		expectedStatusCode int
+		deviceIP           string
+		testName           string
+	}{
+		{[]byte(`{}`), "text/plain", http.StatusBadRequest, "127.0.0.1", "Invalid content type"},
+		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "127.0.0.1", "Invalid JSON format"},
+		{[]byte(`{"jobs": "placeholder"}`), "application/json", http.StatusBadRequest, "999.999.9.9", "Invalid IP address"},
+		{[]byte(`{"jobs": "placeholder"}`), "application/json", http.StatusOK, "127.0.0.1", "Good request"},
+	}
+
+	for i, tt := range tc {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			req := httptest.NewRequest("POST", "/uploadJobs", bytes.NewBuffer(tt.body))
+			req.Header.Set("X-Device", tt.deviceIP)
+			req.Header.Set("Content-Type", tt.content_type)
+
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+}
