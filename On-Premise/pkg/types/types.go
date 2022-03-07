@@ -1,5 +1,7 @@
 package types
 
+// Message struct represent the message with all its possible fields that any of the backend endpoints
+// will probably receive
 type Message struct {
 	Type       string `json:"type"`
 	Message    string `json:"message,omitempty"`
@@ -11,6 +13,7 @@ type Message struct {
 	UploadURL  string `json:"UploadURL,omitempty"`
 }
 
+// JobClient struct represent the struct that will be sent to devices when sending them a job
 type JobClient struct {
 	FileName string `json:"filename"`
 	Material string `json:"material"`

@@ -11,8 +11,11 @@ import (
 	"time"
 )
 
-const CLIENT_PORT = "55555"
+// ClientPort is an arbitrary port used in which the device API is listening
+const ClientPort = "55555"
 
+// Upload receives a message, validate it fields and send it to the device using its API
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (s *Service) Upload(msg Message) error {
 	fmt.Println("Processing Upload")
 
@@ -43,7 +46,7 @@ func receiveInfoFromDevice(msg Message) ([]byte, error) {
 		return nil, errors.New("invalid client IP")
 	}
 
-	res, err := http.Get("http://" + client.String() + ":" + CLIENT_PORT + "/" + strings.ToLower(msg.UploadInfo))
+	res, err := http.Get("http://" + client.String() + ":" + ClientPort + "/" + strings.ToLower(msg.UploadInfo))
 
 	if err != nil {
 		return nil, err

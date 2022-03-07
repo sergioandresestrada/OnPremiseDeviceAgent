@@ -10,27 +10,32 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Server is the struct used to set up the device API.
+// It contains a queue and object storage implementation, a rotuer and its own public URL
 type Server struct {
-	queue       queue.Queue
-	obj_storage objstorage.Obj_storage
-	router      *mux.Router
-	serverURL   string
+	queue      queue.Queue
+	objStorage objstorage.ObjStorage
+	router     *mux.Router
+	serverURL  string
 }
 
-func NewServer(queue queue.Queue, obj_storage objstorage.Obj_storage, router *mux.Router) *Server {
+// NewServer creates and returns the reference to a new Server struct
+// It sets the serverURL field to the corresponding Environment variable value, and panics if it not present
+func NewServer(queue queue.Queue, objStorage objstorage.ObjStorage, router *mux.Router) *Server {
 	url, ok := os.LookupEnv("SERVER_URL")
 	if !ok {
 		panic("Environment variable SERVER_URL does not exist")
 	}
 
 	s := &Server{
-		router:      router,
-		queue:       queue,
-		obj_storage: obj_storage,
-		serverURL:   url}
+		router:     router,
+		queue:      queue,
+		objStorage: objStorage,
+		serverURL:  url}
 	return s
 }
 
+// ListenAndServe makes the server router listen so that the API endpoints are available
 func (s *Server) ListenAndServe() {
 	log.Fatal(http.ListenAndServe(":12345", s.router))
 }

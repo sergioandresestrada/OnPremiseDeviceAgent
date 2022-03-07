@@ -135,11 +135,11 @@ func TestJob(t *testing.T) {
 
 }
 
-func CustomCreateFormFile(w *multipart.Writer, fieldName string, fileName string, content_type string) (io.Writer, error) {
+func CustomCreateFormFile(w *multipart.Writer, fieldName string, fileName string, contentType string) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition",
 		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldName, fileName))
-	h.Set("Content-Type", content_type)
+	h.Set("Content-Type", contentType)
 	return w.CreatePart(h)
 }
 
@@ -162,7 +162,7 @@ func TestUpload(t *testing.T) {
 
 	var tc = []struct {
 		body               []byte
-		content_type       string
+		contentType        string
 		expectedStatusCode int
 		testName           string
 	}{
@@ -177,7 +177,7 @@ func TestUpload(t *testing.T) {
 	for i, tt := range tc {
 		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
 			req := httptest.NewRequest("POST", "/upload", bytes.NewBuffer(tt.body))
-			req.Header.Set("Content-Type", tt.content_type)
+			req.Header.Set("Content-Type", tt.contentType)
 			w := httptest.NewRecorder()
 			server.router.ServeHTTP(w, req)
 			if w.Result().StatusCode != tt.expectedStatusCode {
@@ -205,7 +205,7 @@ func TestUploadIdentification(t *testing.T) {
 
 	var tc = []struct {
 		body               []byte
-		content_type       string
+		contentType        string
 		expectedStatusCode int
 		deviceIP           string
 		testName           string
@@ -220,7 +220,7 @@ func TestUploadIdentification(t *testing.T) {
 		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
 			req := httptest.NewRequest("POST", "/uploadIdentification", bytes.NewBuffer(tt.body))
 			req.Header.Set("X-Device", tt.deviceIP)
-			req.Header.Set("Content-Type", tt.content_type)
+			req.Header.Set("Content-Type", tt.contentType)
 
 			w := httptest.NewRecorder()
 			server.router.ServeHTTP(w, req)
@@ -249,7 +249,7 @@ func TestUploadJobs(t *testing.T) {
 
 	var tc = []struct {
 		body               []byte
-		content_type       string
+		contentType        string
 		expectedStatusCode int
 		deviceIP           string
 		testName           string
@@ -264,7 +264,7 @@ func TestUploadJobs(t *testing.T) {
 		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
 			req := httptest.NewRequest("POST", "/uploadJobs", bytes.NewBuffer(tt.body))
 			req.Header.Set("X-Device", tt.deviceIP)
-			req.Header.Set("Content-Type", tt.content_type)
+			req.Header.Set("Content-Type", tt.contentType)
 
 			w := httptest.NewRecorder()
 			server.router.ServeHTTP(w, req)

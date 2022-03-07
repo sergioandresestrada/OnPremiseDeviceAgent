@@ -16,8 +16,11 @@ import (
 	"time"
 )
 
-const CLIENT_JOB_PORT = "55555"
+// ClientJobPort is an arbitrary port used in which the device API is listening
+const ClientJobPort = "55555"
 
+// Job receives a message, validate it fields and send it to the device using its API
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (s *Service) Job(msg Message) error {
 
 	if msg.FileName == "" || msg.S3Name == "" || msg.Material == "" || msg.IPAddress == "" {
@@ -32,7 +35,7 @@ func (s *Service) Job(msg Message) error {
 	}
 	defer fd.Close()
 
-	err = s.obj_storage.DownloadFile(msg, fd)
+	err = s.objStorage.DownloadFile(msg, fd)
 	if err != nil {
 		err = fmt.Errorf("error downloading the file: %w", err)
 		return err
@@ -53,7 +56,7 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 		return errors.New("invalid client IP")
 	}
 
-	JobJson, err := json.Marshal(&job)
+	JobJSON, err := json.Marshal(&job)
 
 	if err != nil {
 		return errors.New("error creating the job to send to the client")
@@ -67,11 +70,11 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 		return errors.New("error including the JSON in the petition")
 	}
 
-	io.Copy(fw, strings.NewReader(string(JobJson)))
+	io.Copy(fw, strings.NewReader(string(JobJSON)))
 
 	switch filepath.Ext(fd.Name()) {
 	case ".pdf":
-		fw, err = CustomCreateFormFile(writer, "file", fd.Name(), "application/pdf")
+		fw, err = customCreateFormFile(writer, "file", fd.Name(), "application/pdf")
 	default:
 		fw, err = writer.CreateFormFile("file", fd.Name())
 	}
@@ -87,7 +90,7 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 	httpClient := &http.Client{
 		Timeout: time.Second * 10,
 	}
-	req, err := http.NewRequest("POST", "http://"+clientIP+":"+CLIENT_JOB_PORT+"/job", body)
+	req, err := http.NewRequest("POST", "http://"+clientIP+":"+ClientJobPort+"/job", body)
 
 	if err != nil {
 		return err
@@ -103,10 +106,10 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 	return nil
 }
 
-func CustomCreateFormFile(w *multipart.Writer, fieldName string, fileName string, content_type string) (io.Writer, error) {
+func customCreateFormFile(w *multipart.Writer, fieldName string, fileName string, contentType string) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition",
 		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldName, fileName))
-	h.Set("Content-Type", content_type)
+	h.Set("Content-Type", contentType)
 	return w.CreatePart(h)
 }

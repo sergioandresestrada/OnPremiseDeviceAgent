@@ -1,5 +1,7 @@
 package types
 
+// Message struct represent the message with all its possible fields that any of the backend endpoints
+// will probably receive
 type Message struct {
 	Type       string `json:"type"`
 	Message    string `json:"message,omitempty"`

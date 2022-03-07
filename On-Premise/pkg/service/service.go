@@ -1,29 +1,37 @@
 package service
 
 import (
-	"On-Premise/pkg/obj_storage"
+	objstorage "On-Premise/pkg/obj_storage"
 	"On-Premise/pkg/queue"
 	"On-Premise/pkg/types"
 	"encoding/json"
 	"fmt"
 )
 
+// Message is just a reference to type Message in package types so that the usage is shorter
 type Message = types.Message
+
+// JobClient is just a reference to type JobClient in package types so that the usage is shorter
 type JobClient = types.JobClient
 
+// Service is the struct used to set up the On-Premise Server
+// It contains a queue and object storage implementation
 type Service struct {
-	queue       queue.Queue
-	obj_storage obj_storage.Obj_storage
+	queue      queue.Queue
+	objStorage objstorage.ObjStorage
 }
 
-func NewService(queue queue.Queue, obj_storage obj_storage.Obj_storage) *Service {
+// NewService creates and returns the reference to a new Service struct
+func NewService(queue queue.Queue, objStorage objstorage.ObjStorage) *Service {
 	s := &Service{
-		queue:       queue,
-		obj_storage: obj_storage,
+		queue:      queue,
+		objStorage: objStorage,
 	}
 	return s
 }
 
+// Run is the main program loop.
+// It will poll for messages from the queue and process them one by one
 func (s *Service) Run() {
 	for {
 		receivedMessages := s.queue.ReceiveMessages()

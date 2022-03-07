@@ -16,8 +16,12 @@ import (
 	"time"
 )
 
+// Message is just a reference to type Message in package types so that the usage is shorter
 type Message = types.Message
 
+// Heartbeat is the handler used with POST and OPTIONS /heartbeat endpoint
+// It will validate the received JSON, if valid, and send the corresponding message to the queue
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 
@@ -59,6 +63,10 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	utils.OKRequest(w)
 }
 
+// Job is the handler used with POST and OPTIONS /job endpoint
+// It will validate the received MultiPart Form, if valid,
+// and send the corresponding message to the queue and file to object storage
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(64 << 20)
 
@@ -121,7 +129,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	message.FileName = fileHeader.Filename
 	message.S3Name = strconv.Itoa(rand.Int())
 
-	err = s.obj_storage.UploadFile(file, message.S3Name)
+	err = s.objStorage.UploadFile(file, message.S3Name)
 
 	if err != nil {
 		fmt.Printf("%v\n", err)
@@ -146,6 +154,10 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	utils.OKRequest(w)
 }
 
+// Upload is the handler used with POST and OPTIONS /upload endpoint
+// It will validate the received JSON, if valid, and send the corresponding message to the queue,
+// including the URL that the On-Premise server will have to use to upload the requested information
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 
@@ -217,6 +229,11 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// UploadIdentification is the handler used with POST /uploadIdentification endpoint
+// It will receive a JSON body containing device's identification information
+// and device's IP in the X-Device header, create the correspoding file
+// and upload it to the object storage
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		fmt.Println("Invalid request content type")
@@ -265,7 +282,7 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 	io.Copy(file, bytes.NewBuffer(body))
 	file.Seek(0, 0)
 
-	err = s.obj_storage.UploadFile(file, fileName)
+	err = s.objStorage.UploadFile(file, fileName)
 
 	if err != nil {
 		fmt.Printf("%v\n", err)
@@ -277,6 +294,11 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// UploadJobs is the handler used with POST /uploadJobs endpoint
+// It will receive a JSON body containing device's jobs information
+// and device's IP in the X-Device header, create the correspoding file
+// and upload it to the object storage
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") != "application/json" {
 		fmt.Println("Invalid request content type")
@@ -325,7 +347,7 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 	io.Copy(file, bytes.NewBuffer(body))
 	file.Seek(0, 0)
 
-	err = s.obj_storage.UploadFile(file, fileName)
+	err = s.objStorage.UploadFile(file, fileName)
 
 	if err != nil {
 		fmt.Printf("%v\n", err)

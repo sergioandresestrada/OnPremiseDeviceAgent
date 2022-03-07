@@ -11,6 +11,9 @@ import (
 	"os"
 )
 
+// Jobs is the handler used with GETS /jobs endpoint
+// It returns the information stored in ./files/jobs.json as body
+// Will return status code 500 if there is a problem reading the mentioned file
 func (s *Server) Jobs(w http.ResponseWriter, r *http.Request) {
 	files, err := ioutil.ReadFile("./files/jobs.json")
 
@@ -28,6 +31,9 @@ func (s *Server) Jobs(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Served Jobs JSON file")
 }
 
+// Identification is the handler used with GETS /identification endpoint
+// It returns the information stored in ./identification/jobs.json as body
+// Will return status code 500 if there is a problem reading the mentioned file
 func (s *Server) Identification(w http.ResponseWriter, r *http.Request) {
 	files, err := ioutil.ReadFile("./files/identification.json")
 
@@ -45,6 +51,11 @@ func (s *Server) Identification(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Served Identification JSON file")
 }
 
+// ReceiveJob is the handler used with POST /job endpoint
+// It receives a Job as a MultipartForm request including JSON data in the 'job' field
+// and a file in the 'file field'
+// It will validate the received information and save the received file in the /receivedFiles folder
+// It will return status code 200 or 400 as appropiate
 func (s *Server) ReceiveJob(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(64 << 20)
 
@@ -108,6 +119,9 @@ func (s *Server) ReceiveJob(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received new job with file %v and material %v\n", job.FileName, job.Material)
 }
 
+// Heartbeat is the handler used with POST /heartbeat endpoint
+// It receives a single string as request body and prints it to stdout
+// It will return status code 200 or 400 as appropiate
 func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 
