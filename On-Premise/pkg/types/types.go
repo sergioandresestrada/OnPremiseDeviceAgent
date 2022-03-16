@@ -2,7 +2,7 @@ package types
 
 type Message struct {
 	Type      string `json:"type"`
-	Message   string `json:"message"`
+	Message   string `json:"message,omitempty"`
 	FileName  string `json:"filename,omitempty"`
 	S3Name    string `json:"s3name,omitempty"`
 	Material  string `json:"material,omitempty"`

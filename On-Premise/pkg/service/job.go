@@ -1,19 +1,26 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net"
+	"net/http"
+	"net/textproto"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 const CLIENT_JOB_PORT = "55555"
 
 func (s *Service) Job(msg Message) error {
 
-	if msg.FileName == "" || msg.Message == "" || msg.S3Name == "" || msg.Material == "" || msg.IPAddress == "" {
+	if msg.FileName == "" || msg.S3Name == "" || msg.Material == "" || msg.IPAddress == "" {
 		err := errors.New("some message's expected fields are missing")
 		return err
 	}
@@ -49,29 +56,57 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 	JobJson, err := json.Marshal(&job)
 
 	if err != nil {
-		return errors.New("error creating the job to sent to the client")
+		return errors.New("error creating the job to send to the client")
 	}
 
-	conn, err := net.Dial("tcp", client.String()+":"+CLIENT_JOB_PORT)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	fw, err := writer.CreateFormField("job")
 	if err != nil {
-		return errors.New("error connecting to the device")
+		return errors.New("error including the JSON in the petition")
 	}
 
-	n, err := conn.Write(JobJson)
-	fmt.Printf("sent %v bytes\n", n)
+	io.Copy(fw, strings.NewReader(string(JobJson)))
+
+	switch filepath.Ext(fd.Name()) {
+	case ".pdf":
+		fw, err = CustomCreateFormFile(writer, "file", fd.Name(), "application/pdf")
+	default:
+		fw, err = writer.CreateFormFile("file", fd.Name())
+	}
+
 	if err != nil {
-		return errors.New("error while sending the job")
+		return errors.New("error including the file in the petition")
 	}
 
-	// receive a single byte buffer for sync
-	buffer := make([]byte, 1)
-	conn.Read(buffer)
+	io.Copy(fw, fd)
 
-	_, err = io.Copy(conn, fd)
+	writer.Close()
+
+	httpClient := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	req, err := http.NewRequest("POST", "http://"+clientIP+":"+CLIENT_JOB_PORT+"/job", body)
+
 	if err != nil {
-		return errors.New("error sending the file")
+		return err
 	}
-	conn.Close()
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	rsp, _ := httpClient.Do(req)
+
+	if rsp.StatusCode != http.StatusOK {
+		return fmt.Errorf("resquest failed with status code %v", rsp.StatusCode)
+	}
 
 	return nil
+}
+
+func CustomCreateFormFile(w *multipart.Writer, fieldName string, fileName string, content_type string) (io.Writer, error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition",
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldName, fileName))
+	h.Set("Content-Type", content_type)
+	return w.CreatePart(h)
 }

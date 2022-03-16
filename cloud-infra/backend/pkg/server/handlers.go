@@ -64,10 +64,9 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	var message Message
 	json.Unmarshal([]byte(r.FormValue("data")), &message)
 	fmt.Printf("requestBody: %s\n", r.FormValue("data"))
-	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
 
-	if message.Message == "" || message.Type != "JOB" || message.IPAddress == "" || message.Material == "" {
+	if message.Type != "JOB" || message.IPAddress == "" || message.Material == "" {
 		utils.BadRequest(w)
 		return
 	}

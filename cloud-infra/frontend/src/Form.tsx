@@ -27,13 +27,13 @@ const initialState = {
     submitOutcome : ''
 }
 
-const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
-//const URL = "http://192.168.1.208:12345"
+//const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+const URL = "http://192.168.1.208:12345"
 
 const REGEX_IPAddress = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
 interface IJob{
-    message : string,
+    message? : string,
     type : Type,
     file? : File,
     material? : string
@@ -91,7 +91,6 @@ class Form extends React.Component<{}, IJob>{
                 let formData = new FormData()
                 let data = JSON.stringify({
                     type: this.state.type,
-                    message: this.state.message,
                     material: this.state.material,
                     IPAddress: this.state.IPAddress
                 })
@@ -213,10 +212,14 @@ class Form extends React.Component<{}, IJob>{
                             })}
                         </Input>
                     </FormGroup>
+                    {this.state.type === "HEARTBEAT" &&
+                    <div>
                     <FormGroup>
                         <Label for='jobMessage'>Message to send</Label>
                         <Input onChange={this.handleChangeMessage} type="text" id="jobMessage" value={this.state.message} required/>
                     </FormGroup>
+                    </div>
+                    }
                     {this.state.type === "JOB" && 
                     <div>
                     <FormGroup>

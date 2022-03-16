@@ -1,0 +1,233 @@
+{
+	"Jobs": {
+		"Version": "1.7.0.0",
+		"Date": "1970-01-01T00:00:00Z",
+		"Job": [
+			{
+				"Job_ID": "e04e2f8c-73a6-433f-8d84-1f931b038d4a",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/e04e2f8c-73a6-433f-8d84-1f931b038d4a"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "fa977dee-d5b7-4f5d-adb9-c08dcbfe6d76",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/fa977dee-d5b7-4f5d-adb9-c08dcbfe6d76"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "81012b2d-2843-4252-8170-702e2573ed1e",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/81012b2d-2843-4252-8170-702e2573ed1e"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "0db2e9cd-6444-4ede-b8c8-ff8075a27e62",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/0db2e9cd-6444-4ede-b8c8-ff8075a27e62"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "b1bff126-0f34-426e-8f13-c7d1ecde709c",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/b1bff126-0f34-426e-8f13-c7d1ecde709c"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "be055023-5e9e-4188-b611-381c1abc4847",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/be055023-5e9e-4188-b611-381c1abc4847"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "f429459e-5dec-45df-af42-964c228912e1",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/f429459e-5dec-45df-af42-964c228912e1"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "f8f6b2dc-dee2-4792-bec8-e7db1a6f4c1e",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/f8f6b2dc-dee2-4792-bec8-e7db1a6f4c1e"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "60bacbf6-3ab7-402c-8b41-e84baf839ca8",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/60bacbf6-3ab7-402c-8b41-e84baf839ca8"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "f348fe8e-dc61-4ce2-93d6-048e508af59a",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/f348fe8e-dc61-4ce2-93d6-048e508af59a"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "edbfd2ea-e41f-43fa-b203-73b8bebb32df",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/edbfd2ea-e41f-43fa-b203-73b8bebb32df"
+						}
+					]
+				}
+			},
+			{
+				"Job_ID": "7d9e0fff-5a8e-4643-b926-475af4717964",
+				"Status": {
+					"Message": {
+						"@hasStringResource": "true",
+						"#text": "JobProcessed"
+					}
+				},
+				"Links": {
+					"Link": [
+						{
+							"@method": "GET",
+							"@rel": "job",
+							"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/7d9e0fff-5a8e-4643-b926-475af4717964"
+						}
+					]
+				}
+			}
+		],
+		"Links": {
+			"Link": [
+				{
+					"@method": "GET",
+					"@rel": "self",
+					"@uri": "https://localhost:8100/devices/47403f3db555a4dd45cf45e5863a3e6a/HP-MJF/PI/1.7/jobs/"
+				}
+			]
+		}
+	}
+}
