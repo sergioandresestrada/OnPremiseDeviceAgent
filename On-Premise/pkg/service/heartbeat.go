@@ -7,10 +7,13 @@ import (
 	"net/http"
 )
 
-const CLIENT_HB_PORT = "55555"
+// ClientHBPort is an arbitrary port used in which the device API is listening
+const ClientHBPort = "55555"
 
+// Heartbeat receives a Message and prints it to stdout
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (s *Service) Heartbeat(msg Message) error {
-	fmt.Println("Processing Heartbeat Job")
+	fmt.Println("Processing Heartbeat")
 	if msg.Message == "" {
 		err := errors.New("some message's expected fields are missing")
 		return err
@@ -22,7 +25,7 @@ func (s *Service) Heartbeat(msg Message) error {
 
 func sendToClient(message string) error {
 	host := "http://127.0.0.1"
-	port := CLIENT_HB_PORT
+	port := ClientHBPort
 
 	fmt.Printf("sending heartbeat to %s.\n", host)
 

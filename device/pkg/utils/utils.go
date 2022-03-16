@@ -8,6 +8,8 @@ import (
 	"github.com/hschendel/stl"
 )
 
+// ValidateMaterial checks that the provided material is one of the valids one
+// Returns nil if valid and a non-nil error otherwise
 func ValidateMaterial(material string) error {
 	switch material {
 	case "HR PA 11", "HR PA 12GB", "HR TPA", "HR PP", "HR PA 12":
@@ -17,6 +19,8 @@ func ValidateMaterial(material string) error {
 	}
 }
 
+// ValidateFile checks whether the provided file is valid or not
+// Returns nil if file is a valid .pdf or .stl file and an non-nil error otherwise
 func ValidateFile(file io.ReadSeeker, FileName string, MIMEType string) error {
 
 	switch filepath.Ext(FileName) {

@@ -1,4 +1,4 @@
-package obj_storage
+package objstorage
 
 import (
 	"context"
@@ -15,18 +15,21 @@ const (
 	bucketName = "sergiotfgbucket"
 )
 
-type objStorageS3 struct {
+// S3 defines the struct used to implement ObjStorage interface using AWS S3
+// It contains an S3 client and the file downloader to be used
+type S3 struct {
 	s3Client   *s3.Client
 	downloader *manager.Downloader
 }
 
-func NewObjStorageS3() *objStorageS3 {
-	obj := &objStorageS3{}
-	obj.Initialize()
+// NewObjStorageS3 creates and returns the reference to a new S3 struct
+func NewObjStorageS3() *S3 {
+	obj := &S3{}
+	obj.initialize()
 	return obj
 }
 
-func (obj *objStorageS3) Initialize() {
+func (obj *S3) initialize() {
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),
 		config.WithRegion("eu-west-3"))
@@ -39,7 +42,10 @@ func (obj *objStorageS3) Initialize() {
 	obj.downloader = manager.NewDownloader(obj.s3Client)
 }
 
-func (obj *objStorageS3) DownloadFile(message Message, fd *os.File) error {
+// DownloadFile downloads the file with name specified in received message and
+// saves it to the given file pointer
+// Returns a non-nil error if there's one during the execution and nil otherwise
+func (obj *S3) DownloadFile(message Message, fd *os.File) error {
 	fmt.Printf("Downloading file %s\n", message.FileName)
 
 	_, err := obj.downloader.Download(context.TODO(), fd, &s3.GetObjectInput{

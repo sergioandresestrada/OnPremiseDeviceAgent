@@ -5,10 +5,14 @@ import (
 	"net/http"
 )
 
+// Routes defines the different endpoints the backend will have and assign the handlers to them
 func (s *Server) Routes() {
 	s.router.HandleFunc("/", hello)
 	s.router.HandleFunc("/heartbeat", s.Heartbeat).Methods("POST", "OPTIONS")
 	s.router.HandleFunc("/job", s.Job).Methods("POST", "OPTIONS")
+	s.router.HandleFunc("/upload", s.Upload).Methods("POST", "OPTIONS")
+	s.router.HandleFunc("/uploadIdentification", s.UploadIdentification).Methods("POST")
+	s.router.HandleFunc("/uploadJobs", s.UploadJobs).Methods("POST")
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {

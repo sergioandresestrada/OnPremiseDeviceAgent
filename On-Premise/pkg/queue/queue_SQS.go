@@ -15,18 +15,23 @@ const (
 	waitTime  = 20
 )
 
-type queueSQS struct {
+// SQS defines the struct used to implement queue interface using AWS SQS
+// It contains an SQS client, the queue URL to be used, and the input struct to receive messages
+type SQS struct {
 	sqsClient *sqs.Client
 	queueURL  *string
 	mInput    *sqs.ReceiveMessageInput
 }
 
-func NewQueueSQS() *queueSQS {
-	q := &queueSQS{}
+// NewQueueSQS creates and returns the reference to a new SQS struct
+func NewQueueSQS() *SQS {
+	q := &SQS{}
 	q.initialize()
 	return q
 }
 
+// SQSGetLPMsgAPI defines the interface for the GetQueueUrl and ReceiveMessage functions.
+// We use this interface to test the functions using a mocked service.
 type SQSGetLPMsgAPI interface {
 	GetQueueUrl(ctx context.Context,
 		params *sqs.GetQueueUrlInput,
@@ -37,6 +42,8 @@ type SQSGetLPMsgAPI interface {
 		optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error)
 }
 
+// SQSDeleteMessageAPI defines the interface for the GetQueueUrl and DeleteMessage functions.
+// We use this interface to test the functions using a mocked service.
 type SQSDeleteMessageAPI interface {
 	GetQueueUrl(ctx context.Context,
 		params *sqs.GetQueueUrlInput,
@@ -59,7 +66,7 @@ func removeMessage(c context.Context, api SQSDeleteMessageAPI, input *sqs.Delete
 	return api.DeleteMessage(c, input)
 }
 
-func (queue *queueSQS) initialize() {
+func (queue *SQS) initialize() {
 
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),
@@ -98,7 +105,9 @@ func (queue *queueSQS) initialize() {
 
 }
 
-func (queue *queueSQS) ReceiveMessages() []types.Message {
+// ReceiveMessages used the queue to retrieve and return Messages from it
+// Returns nil if there's an error receiving messages
+func (queue *SQS) ReceiveMessages() []types.Message {
 
 	resp, err := getLPMessages(context.TODO(), queue.sqsClient, queue.mInput)
 
@@ -110,7 +119,9 @@ func (queue *queueSQS) ReceiveMessages() []types.Message {
 	return resp.Messages
 }
 
-func (queue *queueSQS) RemoveMessage(msg types.Message) error {
+// RemoveMessage received a processed message and removes it from the queue
+// Returns a non-nil error if there's one during the execution and nil otherwise
+func (queue *SQS) RemoveMessage(msg types.Message) error {
 
 	dMInput := &sqs.DeleteMessageInput{
 		QueueUrl:      queue.queueURL,

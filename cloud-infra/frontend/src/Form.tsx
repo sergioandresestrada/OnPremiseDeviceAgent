@@ -5,7 +5,7 @@ import { Form as FormRS, FormGroup, FormText, Input, Label, Modal, ModalBody, Mo
 enum Type {
     HEARTBEAT = "HEARTBEAT",
     JOB = "JOB",
-    PLACEHOLDER1 = "PLACEHOLDER1"
+    UPLOAD = "UPLOAD"
 }
 
 enum Material {
@@ -16,19 +16,25 @@ enum Material {
     "HR PA 12" = "HR PA 12"
 }
 
+enum UploadInfoTypes {
+    "Jobs" = "Jobs",
+    "Identification" = "Identification"
+}
+
 const initialState = {
     message : '',
     type : Type.HEARTBEAT,
     file : undefined,
     material : Material['HR PA 11'],
     IPAddress : "",
+    UploadInfo : UploadInfoTypes["Jobs"],
 
     processingJob : false,
     submitOutcome : ''
 }
 
-//const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
-const URL = "http://192.168.1.208:12345"
+const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+//const URL = "http://192.168.1.208:12345"
 
 const REGEX_IPAddress = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
@@ -36,10 +42,11 @@ interface IJob{
     message? : string,
     type : Type,
     file? : File,
-    material? : string
-    IPAddress? : string
+    material? : Material,
+    IPAddress? : string,
+    UploadInfo? : UploadInfoTypes,
 
-    processingJob : boolean
+    processingJob : boolean,
     submitOutcome : string
 }
 
@@ -54,6 +61,7 @@ class Form extends React.Component<{}, IJob>{
         this.handleChangeMaterial = this.handleChangeMaterial.bind(this)
         this.handleChangeIP = this.handleChangeIP.bind(this)
         this.validateIP = this.validateIP.bind(this)
+        this.handleChangeUploadInfo = this.handleChangeUploadInfo.bind(this)
     }
 
     handleSubmit(event : FormEvent){
@@ -69,7 +77,7 @@ class Form extends React.Component<{}, IJob>{
                 fetchOptions = {
                     method: "POST",
                     headers: {
-                        "Content-Type": "aplication/json"
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         type: this.state.type,
@@ -87,6 +95,10 @@ class Form extends React.Component<{}, IJob>{
                     alert("Invalid file selected. Please select a PDF or STL file and try again")
                     return
                 }
+                if(!this.validateIP()){
+                    alert("Invalid IP address. Check it and try again.")
+                    return
+                }
                 fullURL = URL + "/job"
                 let formData = new FormData()
                 let data = JSON.stringify({
@@ -100,6 +112,25 @@ class Form extends React.Component<{}, IJob>{
                 fetchOptions = {
                     method: "POST",
                     body: formData
+                }
+                break
+            
+            case "UPLOAD":
+                if(!this.validateIP()){
+                    alert("Invalid IP address. Check it and try again.")
+                    return
+                }
+                fullURL = URL + "/upload"
+                fetchOptions = {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        type: this.state.type,
+                        IPAddress: this.state.IPAddress,
+                        UploadInfo : this.state.UploadInfo
+                    })
                 }
                 break
         }
@@ -182,13 +213,19 @@ class Form extends React.Component<{}, IJob>{
 
     handleChangeMaterial(event: React.ChangeEvent<HTMLInputElement>){
         this.setState({
-            material : event.target.value
+            material : event.target.value as Material
         })
     }
 
     handleChangeIP(event: React.ChangeEvent<HTMLInputElement>){
         this.setState({
             IPAddress : event.target.value
+        })
+    }
+
+    handleChangeUploadInfo(event: React.ChangeEvent<HTMLInputElement>){
+        this.setState({
+            UploadInfo : event.target.value as UploadInfoTypes
         })
     }
 
@@ -212,6 +249,7 @@ class Form extends React.Component<{}, IJob>{
                             })}
                         </Input>
                     </FormGroup>
+
                     {this.state.type === "HEARTBEAT" &&
                     <div>
                     <FormGroup>
@@ -220,6 +258,7 @@ class Form extends React.Component<{}, IJob>{
                     </FormGroup>
                     </div>
                     }
+
                     {this.state.type === "JOB" && 
                     <div>
                     <FormGroup>
@@ -241,6 +280,25 @@ class Form extends React.Component<{}, IJob>{
                             accept='.pdf, .stl' 
                             onChange={this.handleChangeFile} required/>
                         <FormText>Select the file to send to the job</FormText>
+                    </FormGroup>
+                    </div>
+                    }
+
+                    {this.state.type === "UPLOAD" &&
+                    <div>
+                    <FormGroup>
+                        <Label for="IPAddress">Device IP Address</Label>
+                        <Input id="IPAddress" value={this.state.IPAddress} onChange={this.handleChangeIP}
+                                type="text" valid={this.validateIP()} invalid={!this.validateIP()}/>
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label for='uplaodInfo'>Select the information to request</Label>
+                        <Input id='uplaodInfo' value={this.state.UploadInfo} onChange={this.handleChangeUploadInfo} type="select">
+                            {Object.keys(UploadInfoTypes).map( i => {
+                                return <option key={i} value={i}>{i}</option>
+                            })}
+                        </Input>
                     </FormGroup>
                     </div>
                     }

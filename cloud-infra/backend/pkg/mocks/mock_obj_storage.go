@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	multipart "mime/multipart"
+	"io"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,7 +35,7 @@ func (m *MockObj_storage) EXPECT() *MockObj_storageMockRecorder {
 }
 
 // UploadFile mocks base method.
-func (m *MockObj_storage) UploadFile(arg0 *multipart.File, arg1 string) error {
+func (m *MockObj_storage) UploadFile(arg0 io.Reader, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UploadFile", arg0, arg1)
 	ret0, _ := ret[0].(error)
