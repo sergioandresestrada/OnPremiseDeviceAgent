@@ -1,6 +1,7 @@
 import React, { FormEvent } from "react";
 import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter} from 'reactstrap';
 import { URL, validateIP } from '../utils/utils';
+import Help from "./Help";
 
 enum UploadInfoTypes {
     "Jobs" = "Jobs",
@@ -123,10 +124,18 @@ class Upload extends React.Component<{}, IUpload>{
                         </Input>
                     </FormGroup>
                     <FormGroup>
-                        <Input type="submit" value="Submit" />
+                        <Input type="submit" value={"Request " + this.state.UploadInfo + " information"} />
                     </FormGroup>
                 </FormRS>
                 
+                <Help 
+                    message={"You can use an Upload message to request information from a device.\n"+
+                                "Requested information can be device's Jobs list or device's identification.\n"+
+                                "Select the device an desired information to request and click the button.\n"+
+                                "Requested information can be checked, when received back, on the corresponding tab you can find at the top"} 
+                    opened={false}
+                />
+
                 {/* Renders a modal stating that the new job is being processed whenever a new now has been submitted until
                     response from server is received */}
                 {this.state.processingJob &&

@@ -1,6 +1,7 @@
 import React, { FormEvent } from "react";
 import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter} from 'reactstrap';
 import { URL } from '../utils/utils';
+import Help from "./Help";
 
 interface IHeartbeat{
     message : string,
@@ -94,10 +95,16 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
                         <Input onChange={this.handleChangeMessage} type="text" id="heartbeatMessage" value={this.state.message} required/>
                     </FormGroup>
                     <FormGroup>
-                        <Input type="submit" value="Submit" />
+                        <Input type="submit" value="Send Heartbeat to device"/>
                     </FormGroup>
                 </FormRS>
 
+                <Help 
+                    message={"You can use a Heartbeat message to test whether a device is active or not.\n"+
+                                "Introduce the desired message to send and click the button."} 
+                    opened={false}
+                />
+              
                 {/* Renders a modal stating that the new job is being processed whenever a new now has been submitted until
                     response from server is received */}
                 {this.state.processingJob &&

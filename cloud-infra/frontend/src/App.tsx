@@ -9,7 +9,7 @@ function App() {
       <header>
         <Header />
       </header>
-      <div className='Form'>
+      <div className='Form' >
         <Form/>
       </div>
     </div>     

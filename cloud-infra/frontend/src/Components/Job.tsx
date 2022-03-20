@@ -1,6 +1,7 @@
 import React, { FormEvent } from "react";
 import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, FormText} from 'reactstrap';
 import { isValidFile, URL, validateIP } from '../utils/utils';
+import Help from "./Help";
 
 enum Material {
     "HR PA 11" = "HR PA 11", 
@@ -153,9 +154,16 @@ class Job extends React.Component<{}, IJob>{
                         <FormText>Select the file to send to the job</FormText>
                     </FormGroup>
                     <FormGroup>
-                        <Input type="submit" value="Submit"/>
+                        <Input type="submit" value="Print"/>
                     </FormGroup>
                 </FormRS>
+
+                <Help 
+                    message={"You can use a Job message to print an archive in the desired device.\n"+
+                                "Select the desired material to be used, the device and the corresponding file (only STL and PDF are supported)\n"+
+                                "and click the button."} 
+                    opened={false}
+                />
 
                 {/* Renders a modal stating that the new job is being processed whenever a new now has been submitted until
                     response from server is received */}
