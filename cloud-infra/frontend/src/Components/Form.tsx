@@ -4,6 +4,7 @@ import Heartbeat from './Heartbeat';
 import Job from './Job';
 import Upload from './Upload';
 import { Form as FormRS, FormGroup, Input, Label} from 'reactstrap';
+import '../App.css';
 
 enum Type {
     HEARTBEAT = "HEARTBEAT",
@@ -36,7 +37,7 @@ class Form extends React.Component<{}, IJob>{
 
     render() {
         return(
-            <div>
+            <div className='Form'>
                 <FormRS>
                     <FormGroup>
                         <Label for='jobType'>Select the type of message to send</Label>
