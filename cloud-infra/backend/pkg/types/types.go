@@ -12,3 +12,10 @@ type Message struct {
 	UploadInfo string `json:"UploadInfo,omitempty"`
 	UploadURL  string `json:"UploadURL,omitempty"`
 }
+
+// Information struct represents the names of the available files with information about the devices
+// that are present in the object storage
+type Information struct {
+	Jobs           []string
+	Identification []string
+}
