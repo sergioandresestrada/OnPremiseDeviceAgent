@@ -279,8 +279,19 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	io.Copy(file, bytes.NewBuffer(body))
-	file.Seek(0, 0)
+	_, err = io.Copy(file, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
 
 	err = s.objStorage.UploadFile(file, fileName)
 
@@ -344,8 +355,19 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	io.Copy(file, bytes.NewBuffer(body))
-	file.Seek(0, 0)
+	_, err = io.Copy(file, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
 
 	err = s.objStorage.UploadFile(file, fileName)
 
@@ -427,7 +449,12 @@ func (s *Server) GetInformationFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file.Seek(0, 0)
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -459,7 +486,11 @@ func (s *Server) TestJobs(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Write(file)
+	_, err := w.Write(file)
+	if err != nil {
+		fmt.Printf("There was an error writing the information: %v\n", err)
+		return
+	}
 }
 
 // TestIdentification is the test handler used with GET /testidentification endpoint
@@ -472,5 +503,9 @@ func (s *Server) TestIdentification(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Write(file)
+	_, err := w.Write(file)
+	if err != nil {
+		fmt.Printf("There was an error writing the information: %v\n", err)
+		return
+	}
 }

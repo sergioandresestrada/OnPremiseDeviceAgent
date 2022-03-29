@@ -129,6 +129,9 @@ func (obj *S3) AvailableInformation() (types.Information, error) {
 	return listAvailable, nil
 }
 
+// GetFile receives a file name and a file pointer
+// It will retrieve the mentioned file from S3 and store it in the pointer received
+// It also returns a non-nil error if there's one during the execution and nil otherwise
 func (obj *S3) GetFile(fileName string, fd *os.File) error {
 	_, err := obj.downloader.Download(context.TODO(), fd, &s3.GetObjectInput{
 		Bucket: aws.String(obj.BUCKETNAME),

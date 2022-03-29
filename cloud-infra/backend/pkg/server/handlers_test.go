@@ -101,7 +101,10 @@ func TestJob(t *testing.T) {
 
 			if tt.data != nil {
 				fw, _ := writer.CreateFormField("data")
-				io.Copy(fw, strings.NewReader(string(tt.data)))
+				_, err := io.Copy(fw, strings.NewReader(string(tt.data)))
+				if err != nil {
+					t.Errorf("Error while copying data in test %v: %v", tt.testName, err)
+				}
 			}
 
 			if tt.file != "" {
@@ -116,7 +119,10 @@ func TestJob(t *testing.T) {
 				if err != nil {
 					t.Errorf("File %s not found in test folder", tt.file)
 				}
-				io.Copy(fw, file)
+				_, err = io.Copy(fw, file)
+				if err != nil {
+					t.Errorf("Error while copying data in test %v: %v", tt.testName, err)
+				}
 				file.Close()
 			}
 			writer.Close()
