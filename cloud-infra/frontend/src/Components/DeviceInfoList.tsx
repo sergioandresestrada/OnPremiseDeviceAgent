@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { Link, Navigate } from "react-router-dom";
-import {Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner, Table} from "reactstrap";
+import {Alert, Button, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner, Table} from "reactstrap";
 import { URL } from "../utils/utils"
 
 interface IDeviceInfoList{
@@ -54,6 +54,13 @@ class DeviceInfoList extends React.Component<{},IDeviceInfoList>{
     }
 
     renderRows(data: string[]): ReactNode{
+        if (data.length === 0) {
+            return (
+                <tr key="empty" style={{color:"black"}}>
+                    <td>No available information at the moment</td>
+                </tr>
+            )
+        }
         return data.map((item) => {
             return(
                 <tr key={item} id={item} onClick={this.selectDeviceInfo} style={{color:"black"}}>
@@ -112,6 +119,16 @@ class DeviceInfoList extends React.Component<{},IDeviceInfoList>{
         return(
             <div>
                 <Container style={{marginTop: '2rem'}}>
+                    <Row>
+                        <Alert color="primary" style={{marginBottom:'1.5em'}}>
+                            <div>Below you can find the available information from the devices.</div>
+                            <br/>
+                            <div>Select the desired one in order to further analyze it. </div>
+                        </Alert>
+                    </Row>
+                    <Row>
+                        <Button style={{marginBottom:'1.5em', backgroundColor:"#0096D6", width: "200px"}} onClick={() => window.location.reload()}>Reload information</Button>
+                    </Row>
                     <Row >
                         <Col
                             className="bg-light border"

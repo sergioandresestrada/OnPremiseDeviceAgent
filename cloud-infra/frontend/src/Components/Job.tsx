@@ -161,7 +161,7 @@ class Job extends React.Component<{}, IJob>{
                 <Help 
                     message={"You can use a Job message to print an archive in the desired device.\n"+
                                 "Select the desired material to be used, the device and the corresponding file (only STL and PDF are supported)\n"+
-                                "and click the button."} 
+                                "and click the 'Print' button."} 
                     opened={false}
                 />
 

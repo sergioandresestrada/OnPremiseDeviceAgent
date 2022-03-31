@@ -22,8 +22,8 @@ class Help extends React.Component<IHelp, IHelp>{
         return(
             <div>
                 <Button onClick={this.toggle} style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>Help</Button>
-                <Collapse isOpen={this.state.opened}>
-                <Card>
+                <Collapse isOpen={this.state.opened} style={{marginTop: '1em'}}>
+                <Card outline style={{borderColor:"#0096D6"}}>
                     <CardBody>
                     {this.state.message}
                     </CardBody>

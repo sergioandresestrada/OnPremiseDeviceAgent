@@ -6,7 +6,7 @@ const ShowJobs = ({Jobs}: Jobs.RootObject) => {
     return(
     <UncontrolledAccordion defaultOpen="1" open="1" style={{paddingTop:"1em"}}>
     <AccordionItem>
-        <AccordionHeader targetId="1">Regular Information</AccordionHeader>
+        <AccordionHeader targetId="1">General Information</AccordionHeader>
         <AccordionBody accordionId="1">
             <ul>
                 <li key="version">{"Version: " + Jobs.Version}</li>

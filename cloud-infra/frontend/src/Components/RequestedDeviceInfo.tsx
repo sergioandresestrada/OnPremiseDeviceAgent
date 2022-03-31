@@ -42,6 +42,7 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
         let fullURL : string = ""
 
         fullURL = URL + "/getInformationFile?file=" + localStorage.getItem("requestedInfo")
+        //fullURL = URL+"/testjobs"
         fetch(fullURL)
         .then(res => res.json())
         .then(

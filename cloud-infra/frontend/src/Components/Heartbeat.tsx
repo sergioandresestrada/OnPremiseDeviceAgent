@@ -95,7 +95,7 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
                         <Input onChange={this.handleChangeMessage} type="text" id="heartbeatMessage" value={this.state.message} required/>
                     </FormGroup>
                     <FormGroup>
-                        <Input type="submit" value="Send Heartbeat to device"/>
+                        <Input type="submit" value="Send Heartbeat to the printer"/>
                     </FormGroup>
                 </FormRS>
 
