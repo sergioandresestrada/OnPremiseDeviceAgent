@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
 import { URL } from "../utils/utils"
-import GeneralInfoShow from "./GeneralInfoShow";
 import '../App.css';
 import ShowIdentification from "./DeviceIdentificationRender";
 import ShowJobs from "./DeviceJobsRender";
@@ -90,29 +89,8 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
                 </ModalFooter>
             </Modal>
             )
-        }
-        
-        // RENDERING OPTION 1. GENERAL FOR ANY JSON
-        /*
-        const renderInfoProps = {
-            obj: this.state.information
-        }
+        }      
 
-        return(
-            <div className="DeviceInfoShow">
-                <Alert color="primary">
-                    {fileName !== null ? "Loaded information: " + fileName.replace(".json", "") : ""}
-                </Alert>
-                <GeneralInfoShow {...renderInfoProps}/>
-                <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>
-                        <Link to="/deviceInfoList" style={{color:"white", textDecoration: "none" }}>Go back to available information List</Link>
-                </Button>
-            </div>
-        )
-        */
-
-        // RENDERING OPTION 2. PERSONALIZED FOR EACH JSON
-        
         if(this.state.information.hasOwnProperty("Jobs")){
             return(
                 <div className="DeviceInfoShow">
