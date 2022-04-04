@@ -2,6 +2,7 @@ package server
 
 import (
 	"backend/pkg/mocks"
+	"backend/pkg/types"
 	"bytes"
 	"fmt"
 	"io"
@@ -25,7 +26,7 @@ func TestHeartbeat(t *testing.T) {
 	mockQueue := mocks.NewMockQueue(mockCtrl)
 
 	// Object Storage not used in Heartbeat Handler but we need to pass one to the server struct
-	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
@@ -67,7 +68,7 @@ func TestJob(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockQueue := mocks.NewMockQueue(mockCtrl)
-	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
@@ -100,7 +101,10 @@ func TestJob(t *testing.T) {
 
 			if tt.data != nil {
 				fw, _ := writer.CreateFormField("data")
-				io.Copy(fw, strings.NewReader(string(tt.data)))
+				_, err := io.Copy(fw, strings.NewReader(string(tt.data)))
+				if err != nil {
+					t.Errorf("Error while copying data in test %v: %v", tt.testName, err)
+				}
 			}
 
 			if tt.file != "" {
@@ -115,7 +119,10 @@ func TestJob(t *testing.T) {
 				if err != nil {
 					t.Errorf("File %s not found in test folder", tt.file)
 				}
-				io.Copy(fw, file)
+				_, err = io.Copy(fw, file)
+				if err != nil {
+					t.Errorf("Error while copying data in test %v: %v", tt.testName, err)
+				}
 				file.Close()
 			}
 			writer.Close()
@@ -150,7 +157,7 @@ func TestUpload(t *testing.T) {
 	mockQueue := mocks.NewMockQueue(mockCtrl)
 
 	// Object Storage not used in Upload Handler but we need to pass one to the server struct
-	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
@@ -193,7 +200,7 @@ func TestUploadIdentification(t *testing.T) {
 
 	// Mocked queue not used in this handler but we need to pass one to the server struct
 	mockQueue := mocks.NewMockQueue(mockCtrl)
-	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
 	// The mocked object storage will return nil as error when called with any values
 	mockObjStorage.EXPECT().UploadFile(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -237,7 +244,7 @@ func TestUploadJobs(t *testing.T) {
 
 	// Mocked queue not used in this handler but we need to pass one to the server struct
 	mockQueue := mocks.NewMockQueue(mockCtrl)
-	mockObjStorage := mocks.NewMockObj_storage(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
 	// The mocked object storage will return nil as error when called with any values
 	mockObjStorage.EXPECT().UploadFile(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -265,6 +272,94 @@ func TestUploadJobs(t *testing.T) {
 			req := httptest.NewRequest("POST", "/uploadJobs", bytes.NewBuffer(tt.body))
 			req.Header.Set("X-Device", tt.deviceIP)
 			req.Header.Set("Content-Type", tt.contentType)
+
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestAvailableInformation(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	// Mocked queue not used in this handler but we need to pass one to the server struct
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
+
+	var validInformation types.Information
+	validInformation.Identification = []string{"Identification-127_0_0_1.json", "Identification-192_168_0_1.json"}
+	validInformation.Jobs = []string{"Jobs-127_0_0_1.json"}
+
+	router := mux.NewRouter()
+
+	server := NewServer(mockQueue, mockObjStorage, router)
+	server.Routes()
+
+	var tc = []struct {
+		returnedError      error
+		expectedStatusCode int
+		testName           string
+	}{
+		{nil, 200, "All fine"},
+		{fmt.Errorf("Error getting available information"), 500, "Error while getting available information"},
+	}
+
+	for i, tt := range tc {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+
+			mockObjStorage.EXPECT().AvailableInformation().Return(validInformation, tt.returnedError).Times(1)
+			req := httptest.NewRequest("GET", "/availableInformation", nil)
+
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+
+}
+
+func TestGetInformationFile(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	// Mocked queue not used in this handler but we need to pass one to the server struct
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
+
+	router := mux.NewRouter()
+
+	server := NewServer(mockQueue, mockObjStorage, router)
+	server.Routes()
+
+	var tc = []struct {
+		requestAdditionalPath    string
+		GetFileMockReturnedError error
+		expectedStatusCode       int
+		usesObjStorage           bool
+		testName                 string
+	}{
+		{"", nil, 400, false, "Missing URL parameter"},
+		{"?archive=Jobs-192_2_1_1.json", nil, 400, false, "Invalid URL parameter key"},
+		{"?file=jobs-192_2_1_1.json", nil, 400, false, "Invalid requested file prefix"},
+		{"?file=Jobs-192_2_1_1.pdf", nil, 400, false, "Invalid requested file suffix"},
+		{"?file=Jobs-192_2_1_1.json", fmt.Errorf("Error on GetFile"), 500, true, "Server error while getting requested file"},
+		{"?file=Jobs-192_2_1_1.json", nil, 200, true, "All good"},
+	}
+
+	for i, tt := range tc {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			if tt.usesObjStorage {
+				mockObjStorage.EXPECT().GetFile(gomock.Any(), gomock.Any()).Return(tt.GetFileMockReturnedError).Times(1)
+			}
+
+			req := httptest.NewRequest("GET", "/getInformationFile"+tt.requestAdditionalPath, nil)
 
 			w := httptest.NewRecorder()
 			server.router.ServeHTTP(w, req)

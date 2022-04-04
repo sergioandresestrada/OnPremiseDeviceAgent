@@ -5,37 +5,68 @@
 package mocks
 
 import (
-	"io"
+	types "backend/pkg/types"
+	io "io"
+	os "os"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockObj_storage is a mock of Obj_storage interface.
-type MockObj_storage struct {
+// MockObjStorage is a mock of ObjStorage interface.
+type MockObjStorage struct {
 	ctrl     *gomock.Controller
-	recorder *MockObj_storageMockRecorder
+	recorder *MockObjStorageMockRecorder
 }
 
-// MockObj_storageMockRecorder is the mock recorder for MockObj_storage.
-type MockObj_storageMockRecorder struct {
-	mock *MockObj_storage
+// MockObjStorageMockRecorder is the mock recorder for MockObjStorage.
+type MockObjStorageMockRecorder struct {
+	mock *MockObjStorage
 }
 
-// NewMockObj_storage creates a new mock instance.
-func NewMockObj_storage(ctrl *gomock.Controller) *MockObj_storage {
-	mock := &MockObj_storage{ctrl: ctrl}
-	mock.recorder = &MockObj_storageMockRecorder{mock}
+// NewMockObjStorage creates a new mock instance.
+func NewMockObjStorage(ctrl *gomock.Controller) *MockObjStorage {
+	mock := &MockObjStorage{ctrl: ctrl}
+	mock.recorder = &MockObjStorageMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockObj_storage) EXPECT() *MockObj_storageMockRecorder {
+func (m *MockObjStorage) EXPECT() *MockObjStorageMockRecorder {
 	return m.recorder
 }
 
+// AvailableInformation mocks base method.
+func (m *MockObjStorage) AvailableInformation() (types.Information, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AvailableInformation")
+	ret0, _ := ret[0].(types.Information)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AvailableInformation indicates an expected call of AvailableInformation.
+func (mr *MockObjStorageMockRecorder) AvailableInformation() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailableInformation", reflect.TypeOf((*MockObjStorage)(nil).AvailableInformation))
+}
+
+// GetFile mocks base method.
+func (m *MockObjStorage) GetFile(arg0 string, arg1 *os.File) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFile", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetFile indicates an expected call of GetFile.
+func (mr *MockObjStorageMockRecorder) GetFile(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFile", reflect.TypeOf((*MockObjStorage)(nil).GetFile), arg0, arg1)
+}
+
 // UploadFile mocks base method.
-func (m *MockObj_storage) UploadFile(arg0 io.Reader, arg1 string) error {
+func (m *MockObjStorage) UploadFile(arg0 io.Reader, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UploadFile", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -43,7 +74,7 @@ func (m *MockObj_storage) UploadFile(arg0 io.Reader, arg1 string) error {
 }
 
 // UploadFile indicates an expected call of UploadFile.
-func (mr *MockObj_storageMockRecorder) UploadFile(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockObjStorageMockRecorder) UploadFile(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadFile", reflect.TypeOf((*MockObj_storage)(nil).UploadFile), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadFile", reflect.TypeOf((*MockObjStorage)(nil).UploadFile), arg0, arg1)
 }

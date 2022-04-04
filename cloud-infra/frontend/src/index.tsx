@@ -1,13 +1,34 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './Components/Header';
+import Form from './Components/Form';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import DeviceInfoList from './Components/DeviceInfoList';
+import RequestedDeviceInfo from './Components/RequestedDeviceInfo';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <header>
+        <Header />
+      </header>
+      <Routes>
+        <Route path="/" element={<Form />} />
+        <Route path="/deviceInfoList" element={<DeviceInfoList/>} />
+        <Route path="/deviceInfo" element={<RequestedDeviceInfo/>} />
+        <Route
+          path="*"
+          element={
+            <main style={{ padding: "1rem" }}>
+              <p>There's nothing here!</p>
+            </main>
+          }
+        />
+      </Routes>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

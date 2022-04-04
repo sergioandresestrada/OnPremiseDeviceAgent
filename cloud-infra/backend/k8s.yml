@@ -13,7 +13,7 @@ spec:
                 app: backend
         spec:
             containers:
-                - image: sergioandresestrada/cloud_backend:0.3
+                - image: sergioandresestrada/cloud_backend:0.4
                   name: backend
                   env:
                       - name: AWS_ACCESS_KEY_ID

@@ -279,8 +279,19 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	io.Copy(file, bytes.NewBuffer(body))
-	file.Seek(0, 0)
+	_, err = io.Copy(file, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
 
 	err = s.objStorage.UploadFile(file, fileName)
 
@@ -344,8 +355,19 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	defer os.Remove(file.Name())
 
-	io.Copy(file, bytes.NewBuffer(body))
-	file.Seek(0, 0)
+	_, err = io.Copy(file, bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
 
 	err = s.objStorage.UploadFile(file, fileName)
 
@@ -356,4 +378,134 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.OKRequest(w)
+}
+
+// AvailableInformation is the handler used with GET /availableInformation endpoint
+// It will return a JSON with all the Jobs and Identification information files
+// that are available in the object storage
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) AvailableInformation(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	AvailableInformation, err := s.objStorage.AvailableInformation()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	jsonResult, err := json.Marshal(AvailableInformation)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(jsonResult)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the list of Available Information\n")
+
+}
+
+// GetInformationFile is the handler used with GET /getInformationFile endpoint
+// It will return the requestes JSON file, if it a valid one and it exists in the object storage
+// Requested file name is received from the petition as a Get parameter
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) GetInformationFile(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	key := r.URL.Query().Get("file")
+	if !strings.HasPrefix(key, "Jobs-") && !strings.HasPrefix(key, "Identification-") || !strings.HasSuffix(key, ".json") {
+		utils.BadRequest(w)
+		return
+	}
+
+	file, err := os.CreateTemp("/tmp", "file")
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	defer os.Remove(file.Name())
+
+	err = s.objStorage.GetFile(key, file)
+
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	_, err = w.Write(data)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed file %s\n", key)
+
+}
+
+// TestJobs is the test handler used with GET /testjobs endpoint
+func (s *Server) TestJobs(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+	file, _ := os.ReadFile("jobs.json")
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	_, err := w.Write(file)
+	if err != nil {
+		fmt.Printf("There was an error writing the information: %v\n", err)
+		return
+	}
+}
+
+// TestIdentification is the test handler used with GET /testidentification endpoint
+func (s *Server) TestIdentification(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+	file, _ := os.ReadFile("identification.json")
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	_, err := w.Write(file)
+	if err != nil {
+		fmt.Printf("There was an error writing the information: %v\n", err)
+		return
+	}
 }
