@@ -19,6 +19,9 @@ import (
 // Message is just a reference to type Message in package types so that the usage is shorter
 type Message = types.Message
 
+// Device is just a reference to type Device in package types so that the usage is shorter
+type Device = types.Device
+
 // Heartbeat is the handler used with POST and OPTIONS /heartbeat endpoint
 // It will validate the received JSON, if valid, and send the corresponding message to the queue
 // It will return status code 200, 400 or 500 as appropiate
@@ -473,6 +476,34 @@ func (s *Server) GetInformationFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("\nServed file %s\n", key)
+
+}
+
+func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	devices, err := s.database.GetDevices()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	publicJSON := utils.DevicesToPublicJSON(devices)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(publicJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the information of available Devices\n")
 
 }
 

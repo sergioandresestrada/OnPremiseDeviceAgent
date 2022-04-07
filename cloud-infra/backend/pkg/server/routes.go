@@ -15,6 +15,9 @@ func (s *Server) Routes() {
 	s.router.HandleFunc("/uploadJobs", s.UploadJobs).Methods("POST")
 	s.router.HandleFunc("/availableInformation", s.AvailableInformation).Methods("GET", "OPTIONS")
 	s.router.HandleFunc("/getInformationFile", s.GetInformationFile).Methods("GET", "OPTIONS")
+	s.router.HandleFunc("/getPublicDevices", s.GetDevices).Methods("GET", "OPTIONS")
+
+	// this are test handlers used to test UI without making unnecesary calls to AWS services
 	s.router.HandleFunc("/testjobs", s.TestJobs).Methods("GET", "OPTIONS")
 	s.router.HandleFunc("/testidentification", s.TestIdentification).Methods("GET", "OPTIONS")
 }

@@ -113,7 +113,7 @@ func (obj *S3) AvailableInformation() (types.Information, error) {
 	resp, err := GetObjects(context.TODO(), obj.s3Client, input)
 
 	if err != nil {
-		err = fmt.Errorf("got an getting the list of available files: %w", err)
+		err = fmt.Errorf("error getting the list of available files: %w", err)
 		return listAvailable, err
 	}
 

@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"backend/pkg/types"
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -58,6 +60,50 @@ func TestValidateMaterial(t *testing.T) {
 			}
 			if err == nil && tt.err != nil {
 				t.Fail()
+			}
+		})
+	}
+}
+
+func TestDevicesToPublicJSON(t *testing.T) {
+	deviceEmpty := types.Device{}
+
+	deviceFull := types.Device{
+		IP:         "placeholder",
+		DeviceUUID: "placeholder",
+		Name:       "deviceFullName",
+		Model:      "deviceFullModel",
+	}
+
+	deviceNoModel := types.Device{
+		IP:         "placeholder",
+		DeviceUUID: "placeholder",
+		Name:       "deviceNoModelName",
+	}
+
+	deviceNoName := types.Device{
+		IP:         "placeholder",
+		DeviceUUID: "placeholder",
+	}
+
+	var tc = []struct {
+		devices        []types.Device
+		expectedOutput []byte
+		name           string
+	}{
+		{[]types.Device{}, []byte("[]"), "No devices"},
+		{[]types.Device{deviceEmpty}, []byte("[]"), "Empty device"},
+		{[]types.Device{deviceNoModel}, []byte("[{\"Name\":\"deviceNoModelName\"}]"), "Device no model"},
+		{[]types.Device{deviceFull}, []byte("[{\"Name\":\"deviceFullName\",\"Model\":\"deviceFullModel\"}]"), "Device full"},
+		{[]types.Device{deviceNoName}, []byte("[]"), "Device no name"},
+		{[]types.Device{deviceFull, deviceEmpty, deviceNoModel, deviceNoName}, []byte("[{\"Name\":\"deviceFullName\",\"Model\":\"deviceFullModel\"},{\"Name\":\"deviceNoModelName\"}]"), "Various devices"},
+	}
+
+	for i, tt := range tc {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.name), func(t *testing.T) {
+			output := DevicesToPublicJSON(tt.devices)
+			if !reflect.DeepEqual(output, tt.expectedOutput) {
+				t.Errorf("Expected output %v, got %v", string(tt.expectedOutput), string(output))
 			}
 		})
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/pkg/database"
 	objstorage "backend/pkg/obj_storage"
 	"backend/pkg/queue"
 	"backend/pkg/server"
@@ -12,7 +13,8 @@ func setUpServer() {
 	router := mux.NewRouter()
 	queue := queue.NewQueueSQS()
 	objstorage := objstorage.NewObjStorageS3()
-	server := server.NewServer(queue, objstorage, router)
+	database := database.NewDatabaseDynamoDB()
+	server := server.NewServer(queue, objstorage, database, router)
 
 	server.Routes()
 	server.ListenAndServe()

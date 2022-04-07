@@ -33,7 +33,7 @@ func TestHeartbeat(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -78,7 +78,7 @@ func TestJob(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -164,7 +164,7 @@ func TestUpload(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -207,7 +207,7 @@ func TestUploadIdentification(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -251,7 +251,7 @@ func TestUploadJobs(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -297,7 +297,7 @@ func TestAvailableInformation(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -335,7 +335,7 @@ func TestGetInformationFile(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
