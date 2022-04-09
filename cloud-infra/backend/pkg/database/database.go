@@ -7,4 +7,5 @@ import "backend/pkg/types"
 type Database interface {
 	GetDevices() ([]types.Device, error)
 	InsertDevice(types.Device) error
+	DeviceExistWithNameAndIP(string, string) (bool, error)
 }

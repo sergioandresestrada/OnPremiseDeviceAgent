@@ -8,6 +8,7 @@ import Form from './Components/Form';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import DeviceInfoList from './Components/DeviceInfoList';
 import RequestedDeviceInfo from './Components/RequestedDeviceInfo';
+import DeviceForm from './Components/DeviceForm';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -19,6 +20,7 @@ ReactDOM.render(
         <Route path="/" element={<Form />} />
         <Route path="/deviceInfoList" element={<DeviceInfoList/>} />
         <Route path="/deviceInfo" element={<RequestedDeviceInfo/>} />
+        <Route path="/devices/new" element={<DeviceForm/>} />
         <Route
           path="*"
           element={

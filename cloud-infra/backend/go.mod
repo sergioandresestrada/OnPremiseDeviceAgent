@@ -19,6 +19,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.10.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.8.4
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.4.5
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.0
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.9 // indirect
@@ -32,5 +33,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.0 // indirect
 	github.com/aws/smithy-go v1.11.2 // indirect
 	github.com/golang/mock v1.6.0
+	github.com/google/uuid v1.3.0
 	github.com/hschendel/stl v1.0.4
 )

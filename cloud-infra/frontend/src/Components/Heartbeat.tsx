@@ -6,14 +6,14 @@ import Help from "./Help";
 interface IHeartbeat{
     message : string,
 
-    processingJob : boolean,
+    processingHB : boolean,
     submitOutcome : string
 }
 
 const initialState = {
     message : '',
 
-    processingJob : false,
+    processingHB : false,
     submitOutcome : ''
 }
 
@@ -51,7 +51,7 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
         }
 
         this.setState({
-            processingJob : true
+            processingHB : true
         })
 
         fetch(fullURL, fetchOptions)
@@ -70,14 +70,14 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
             }
             this.setState({
                 submitOutcome : outcome,
-                processingJob : false
+                processingHB : false
             })
         })
         .catch(error => {
             let outcome = "There was an error connecting to the server, please try again later."
             this.setState({
                 submitOutcome : outcome,
-                processingJob : false
+                processingHB : false
             })
         })
     }
@@ -105,20 +105,20 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
                     opened={false}
                 />
               
-                {/* Renders a modal stating that the new job is being processed whenever a new now has been submitted until
+                {/* Renders a modal stating that the new HB is being processed whenever a new one has been submitted until
                     response from server is received */}
-                {this.state.processingJob &&
+                {this.state.processingHB &&
                 <Modal centered isOpen={true}>
                     <ModalHeader>Processing</ModalHeader>
                     <ModalBody> 
                         <Spinner/>
                         {' '}
-                        Your job is being sent, please wait
+                        Your Heartbeat is being sent, please wait
                     </ModalBody>
                 </Modal>
                 }
 
-                {/* Renders a modal to inform about last job submission outcome*/}
+                {/* Renders a modal to inform about last HB submission outcome*/}
                 {this.state.submitOutcome !== '' &&
                 <Modal centered isOpen={true}>
                     <ModalHeader>Outcome</ModalHeader>

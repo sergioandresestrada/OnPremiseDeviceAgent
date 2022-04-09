@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Message is just a reference to type Message in package types so that the usage is shorter
@@ -479,7 +481,10 @@ func (s *Server) GetInformationFile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
+// GetPublicDevices is the handler used with GET /getPublicDevices endpoint
+// It will return the information about all the devices in JSON format
+// It will return status code 200 or 500 as appropiate
+func (s *Server) GetPublicDevices(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)
 		return
@@ -504,6 +509,79 @@ func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("\nServed the information of available Devices\n")
+
+}
+
+// NewDevice is the handler used with POST /devices endpoint
+// It preforms all the necessary checking and, if everything is correct, will insert a new device to the DB
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) NewDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
+		return
+	}
+
+	var device Device
+	err = json.Unmarshal(requestBody, &device)
+
+	if err != nil {
+		fmt.Println("New Device: Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if device.IP == "" || device.Name == "" {
+		fmt.Println("New Device: Invalid JSON provided as body, missing fields")
+		utils.BadRequest(w)
+		return
+	}
+
+	err = utils.ValidateIPAddress(device.IP)
+	if err != nil {
+		fmt.Println("Invalid IP address received")
+		utils.BadRequest(w)
+		return
+	}
+
+	exists, err := s.database.DeviceExistWithNameAndIP(device.Name, device.IP)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if exists {
+		fmt.Println("The device Name or IP provided already exist")
+		utils.BadRequest(w)
+		return
+	}
+
+	device.DeviceUUID = uuid.NewString()
+
+	err = s.database.InsertDevice(device)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	fmt.Println("Device inserted successfully")
 
 }
 

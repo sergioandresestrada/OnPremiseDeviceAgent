@@ -20,6 +20,8 @@ github.com/aws/aws-sdk-go-v2/credentials v1.10.0 h1:M/FFpf2w31F7xqJqJLgiM0mFpLOt
 github.com/aws/aws-sdk-go-v2/credentials v1.10.0/go.mod h1:HWJMr4ut5X+Lt/7epc7I6Llg5QIcoFHKAeIzw32t6EE=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.8.4 h1:RFvKYpSTejcSLgtPmfy6jY2vxcAC6y2f+gHD2HH99fg=
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.8.4/go.mod h1:N7M3jvFFVC8zayueLESAjrsSiak2yYt/b8p4EPsNbaY=
+github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.4.5 h1:UHAzjxRwGBdiufi7NBaBHQw6XMnhVZB2P0JeAbbd+wE=
+github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.4.5/go.mod h1:iqXqwMagYdnvFATn4aGrtYAaTjAYQZSrNrxgEJ+dxZY=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.9.0 h1:fPq3oloONbHaA0O8KX/KYUQk7pG9JjKBwYQvQsQDK84=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.9.0/go.mod h1:19SxQ+9zANyJCnNaoF3ovl8bFil4TaqCYEDdqNGKM+A=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.0 h1:gUlb+I7NwDtqJUIRcFYDiheYa97PdVHG/5Iz+SwdoHE=
@@ -98,6 +100,8 @@ github.com/golang/mock v1.6.0/go.mod h1:p6yTPP+5HYm5mzsMV8JkE6ZKdX+/wYM6Hr+Licev
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.7/go.mod h1:n+brtR0CgQNWTVd5ZUFpTBC8YFBDLK/h/bpaJ8/DtOE=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/hschendel/stl v1.0.4 h1:DXT5rkiXMUkbKw4Ndi1OYZ/a5SLR35TzxGj46p5Qyf8=
