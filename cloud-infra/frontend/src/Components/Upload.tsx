@@ -1,6 +1,5 @@
 import React, { FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, Alert} from 'reactstrap';
+import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter } from 'reactstrap';
 import { DevicePublic } from "../utils/types";
 import { URL } from '../utils/utils';
 import Help from "./Help";
@@ -10,8 +9,11 @@ enum UploadInfoTypes {
     "Identification" = "Identification"
 }
 
+interface PUpload{
+    devices : DevicePublic[]
+}
+
 interface IUpload {
-    availableDevices : DevicePublic[],
     selectedDeviceName : string,
     UploadInfo? : UploadInfoTypes,
 
@@ -20,7 +22,6 @@ interface IUpload {
 }
 
 const initialState = {
-    availableDevices : [] as DevicePublic[],
     selectedDeviceName : '',
     UploadInfo : UploadInfoTypes["Jobs"],
 
@@ -28,7 +29,7 @@ const initialState = {
     submitOutcome : ''
 }
 
-class Upload extends React.Component<{}, IUpload>{
+class Upload extends React.Component<PUpload, IUpload>{
     constructor(props: any){
         super(props)
         this.state = initialState
@@ -39,22 +40,8 @@ class Upload extends React.Component<{}, IUpload>{
     }
 
     componentDidMount(){
-        fetch(URL + "/getPublicDevices")
-        .then(res => res.json())
-        .then(
-            (result) => {
-                this.setState({
-                    availableDevices: result as DevicePublic[]
-                })
-                if (this.state.availableDevices.length > 0){
-                    this.setState({
-                        selectedDeviceName : this.state.availableDevices[0].Name
-                    })
-                }
-            }
-        )
-        .catch(error => {
-            alert("There was an error connecting to the server, please try again later.")
+        this.setState({
+            selectedDeviceName : this.props.devices[0].Name
         })
     }
 
@@ -122,10 +109,9 @@ class Upload extends React.Component<{}, IUpload>{
     }
 
     resetForm = () => {
-        let copyDevices = this.state.availableDevices
         this.setState(initialState)
-        this.setState({
-            availableDevices : copyDevices
+        this.setState({            
+            selectedDeviceName : this.props.devices[0].Name
         })
     }
 
@@ -141,25 +127,17 @@ class Upload extends React.Component<{}, IUpload>{
                             })}
                         </Input>
                     </FormGroup>
-
-                    {this.state.availableDevices.length === 0 &&
-                        <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
-                    }
-                    {this.state.availableDevices.length !== 0 &&
-                        <div>
-                            <FormGroup>
-                                <Label for='device'>Select the device</Label>
-                                <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
-                                    {this.state.availableDevices.map((dev)  => {
-                                        return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
-                                    })}
-                                </Input>            
-                            </FormGroup>
-                            <FormGroup>
-                                <Button type="submit" color="primary" outline style={{width:"100%"}}> {"Request " + this.state.UploadInfo + " information"}</Button>
-                            </FormGroup>
-                        </div>
-                    }
+                    <FormGroup>
+                        <Label for='device'>Select the device</Label>
+                        <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
+                            {this.props.devices.map((dev)  => {
+                                return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
+                            })}
+                        </Input>            
+                    </FormGroup>
+                    <FormGroup>
+                        <Button type="submit" color="primary" outline style={{width:"100%"}}> {"Request " + this.state.UploadInfo + " information"}</Button>
+                    </FormGroup>
                 </FormRS>
                 
                 <Help 

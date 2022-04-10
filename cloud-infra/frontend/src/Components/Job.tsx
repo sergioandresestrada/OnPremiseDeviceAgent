@@ -1,6 +1,5 @@
 import React, { FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, FormText, Alert} from 'reactstrap';
+import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, FormText } from 'reactstrap';
 import { DevicePublic } from "../utils/types";
 import { isValidFile, URL } from '../utils/utils';
 import Help from "./Help";
@@ -13,10 +12,13 @@ enum Material {
     "HR PA 12" = "HR PA 12"
 }
 
+interface PJob{
+    devices : DevicePublic[]
+}
+
 interface IJob{
     file? : File,
     material? : Material,
-    availableDevices : DevicePublic[],
     selectedDeviceName : string
 
     processingJob : boolean,
@@ -26,7 +28,6 @@ interface IJob{
 const initialState = {
     file : undefined,
     material : Material['HR PA 11'],
-    availableDevices : [] as DevicePublic[],
     selectedDeviceName : '',
 
 
@@ -34,7 +35,7 @@ const initialState = {
     submitOutcome : ''
 }
 
-class Job extends React.Component<{}, IJob>{
+class Job extends React.Component<PJob, IJob>{
     constructor(props: any){
         super(props)
         this.state = initialState
@@ -46,22 +47,8 @@ class Job extends React.Component<{}, IJob>{
     }
 
     componentDidMount(){
-        fetch(URL + "/getPublicDevices")
-        .then(res => res.json())
-        .then(
-            (result) => {
-                this.setState({
-                    availableDevices: result as DevicePublic[]
-                })
-                if (this.state.availableDevices.length > 0){
-                    this.setState({
-                        selectedDeviceName : this.state.availableDevices[0].Name
-                    })
-                }
-            }
-        )
-        .catch(error => {
-            alert("There was an error connecting to the server, please try again later.")
+        this.setState({
+            selectedDeviceName : this.props.devices[0].Name
         })
     }
 
@@ -148,10 +135,9 @@ class Job extends React.Component<{}, IJob>{
     }
 
     resetForm = () => {
-        let copyDevices = this.state.availableDevices
         this.setState(initialState)
-        this.setState({
-            availableDevices : copyDevices
+        this.setState({            
+            selectedDeviceName : this.props.devices[0].Name
         })
     }
 
@@ -174,24 +160,17 @@ class Job extends React.Component<{}, IJob>{
                             onChange={this.handleChangeFile} required/>
                         <FormText>Select the file to send to the job</FormText>
                     </FormGroup>
-                    {this.state.availableDevices.length === 0 &&
-                        <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
-                    }
-                    {this.state.availableDevices.length !== 0 &&
-                        <div>
-                            <FormGroup>
-                                <Label for='device'>Select the device</Label>
-                                <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
-                                    {this.state.availableDevices.map((dev)  => {
-                                        return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
-                                    })}
-                                </Input>            
-                            </FormGroup>
-                            <FormGroup>
-                                <Button type="submit" color="primary" outline style={{width:"100%"}}>Print</Button>
-                            </FormGroup>
-                        </div>
-                    }
+                    <FormGroup>
+                        <Label for='device'>Select the device</Label>
+                        <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
+                            {this.props.devices.map((dev)  => {
+                                return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
+                            })}
+                        </Input>            
+                    </FormGroup>
+                    <FormGroup>
+                        <Button type="submit" color="primary" outline style={{width:"100%"}}>Print</Button>
+                    </FormGroup>
                 </FormRS>
 
                 <Help 

@@ -1,13 +1,15 @@
 import React, { FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, Alert} from 'reactstrap';
+import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter } from 'reactstrap';
 import { DevicePublic } from "../utils/types";
 import { URL } from '../utils/utils';
 import Help from "./Help";
 
+interface PHeartbeat{
+    devices : DevicePublic[]
+}
+
 interface IHeartbeat{
     message : string,
-    availableDevices : DevicePublic[],
     selectedDeviceName : string
 
     processingHB : boolean,
@@ -16,14 +18,13 @@ interface IHeartbeat{
 
 const initialState = {
     message : '',
-    availableDevices : [] as DevicePublic[],
     selectedDeviceName : '',
 
     processingHB : false,
     submitOutcome : ''
 }
 
-class Heartbeat extends React.Component<{}, IHeartbeat>{
+class Heartbeat extends React.Component<PHeartbeat, IHeartbeat>{
     constructor(props: any){
         super(props)
         this.state = initialState
@@ -34,22 +35,8 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
     }
 
     componentDidMount(){
-        fetch(URL + "/getPublicDevices")
-        .then(res => res.json())
-        .then(
-            (result) => {
-                this.setState({
-                    availableDevices: result as DevicePublic[]
-                })
-                if (this.state.availableDevices.length > 0){
-                    this.setState({
-                        selectedDeviceName : this.state.availableDevices[0].Name
-                    })
-                }
-            }
-        )
-        .catch(error => {
-            alert("There was an error connecting to the server, please try again later.")
+        this.setState({
+            selectedDeviceName : this.props.devices[0].Name
         })
     }
 
@@ -117,10 +104,9 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
     }
 
     resetForm = () => {
-        let copyDevices = this.state.availableDevices
         this.setState(initialState)
-        this.setState({
-            availableDevices : copyDevices
+        this.setState({            
+            selectedDeviceName : this.props.devices[0].Name
         })
     }
 
@@ -132,24 +118,17 @@ class Heartbeat extends React.Component<{}, IHeartbeat>{
                         <Label for='heartbeatMessage'>Message to send</Label>
                         <Input onChange={this.handleChangeMessage} type="text" id="heartbeatMessage" value={this.state.message} required/>
                     </FormGroup>
-                    {this.state.availableDevices.length === 0 &&
-                        <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
-                    }
-                    {this.state.availableDevices.length !== 0 &&
-                        <div>
-                            <FormGroup>
-                                <Label for='device'>Select the device</Label>
-                                <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
-                                    {this.state.availableDevices.map((dev)  => {
-                                        return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
-                                    })}
-                                </Input>            
-                            </FormGroup>
-                            <FormGroup>
-                                <Button type="submit" color="primary" outline style={{width:"100%"}}> Send Heartbeat to the printer</Button>
-                            </FormGroup>
-                        </div>
-                    }
+                    <FormGroup>
+                        <Label for='device'>Select the device</Label>
+                        <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
+                            {this.props.devices.map((dev)  => {
+                                return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
+                            })}
+                        </Input>            
+                    </FormGroup>
+                    <FormGroup>
+                        <Button type="submit" color="primary" outline style={{width:"100%"}}> Send Heartbeat to the printer</Button>
+                    </FormGroup>
                 </FormRS>
 
                 <Help 

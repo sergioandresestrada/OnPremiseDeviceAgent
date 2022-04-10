@@ -3,8 +3,11 @@ import React from 'react';
 import Heartbeat from './Heartbeat';
 import Job from './Job';
 import Upload from './Upload';
-import { Form as FormRS, FormGroup, Input, Label} from 'reactstrap';
+import { Alert, Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner} from 'reactstrap';
 import '../App.css';
+import { DevicePublic } from '../utils/types';
+import { URL } from '../utils/utils';
+import { Link } from 'react-router-dom';
 
 enum Type {
     HEARTBEAT = "HEARTBEAT",
@@ -14,11 +17,17 @@ enum Type {
 
 const initialState = {
     type : Type.HEARTBEAT,
+    availableDevices : [] as DevicePublic[],
+    errorInFetch: false,
+    isLoading: true,
 }
 
 
 interface IJob{
     type : Type,
+    availableDevices : DevicePublic[],
+    errorInFetch: boolean,
+    isLoading: boolean,
 }
 
 class Form extends React.Component<{}, IJob>{ 
@@ -26,6 +35,26 @@ class Form extends React.Component<{}, IJob>{
         super(props);
         this.state = initialState
         this.handleChangeType = this.handleChangeType.bind(this)
+    }
+
+    componentDidMount(){
+        fetch(URL + "/getPublicDevices")
+        .then(res => res.json())
+        .then(
+            (result) => {
+                this.setState({
+                    availableDevices: result as DevicePublic[],
+                    isLoading : false,
+                    errorInFetch : false
+                })
+            }
+        )
+        .catch(error => {
+            this.setState({
+                isLoading : false,
+                errorInFetch : true
+            })
+        })
     }
 
     
@@ -36,6 +65,34 @@ class Form extends React.Component<{}, IJob>{
     }
 
     render() {
+        const {errorInFetch, isLoading } = this.state
+
+        if (isLoading){
+            return (
+                <div>
+                    <Modal centered isOpen={true}>
+                        <ModalHeader>Getting data</ModalHeader>
+                        <ModalBody> 
+                            <Spinner/>
+                            {' '}
+                            Available devices are getting loaded
+                        </ModalBody>
+                    </Modal>
+                </div>
+            )
+        }
+
+        if (errorInFetch){
+            return(
+                <Modal centered isOpen={true}>
+                    <ModalHeader>Error :(</ModalHeader>
+                    <ModalBody> 
+                        Server is down. Please try again later.
+                    </ModalBody>
+                </Modal>
+            )
+        }
+
         return(
             <div className='Form'>
                 <FormRS>
@@ -48,17 +105,24 @@ class Form extends React.Component<{}, IJob>{
                         </Input>
                     </FormGroup>
                 </FormRS>
-                    {this.state.type === "HEARTBEAT" &&
-                        <Heartbeat/>
-                    }
+                {this.state.availableDevices.length === 0 &&
+                    <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
+                }
+                {this.state.availableDevices.length > 0 &&
+                    <div>
+                        {this.state.type === "HEARTBEAT" &&
+                            <Heartbeat devices={this.state.availableDevices}/>
+                        }
 
-                    {this.state.type === "JOB" && 
-                        <Job/>
-                    }
+                        {this.state.type === "JOB" && 
+                            <Job devices={this.state.availableDevices}/>
+                        }
 
-                    {this.state.type === "UPLOAD" &&
-                        <Upload />
-                    }
+                        {this.state.type === "UPLOAD" &&
+                            <Upload devices={this.state.availableDevices}/>
+                        }
+                    </div>
+                }
             </div>
         )
     }
