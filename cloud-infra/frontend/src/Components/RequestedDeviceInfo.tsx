@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
-import { URL } from "../utils/utils"
+import { URL, beautifyFileName } from "../utils/utils"
 import '../App.css';
 import ShowIdentification from "./DeviceIdentificationRender";
 import ShowJobs from "./DeviceJobsRender";
@@ -95,7 +95,7 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
             return(
                 <div className="DeviceInfoShow">
                     <Alert color="primary">
-                        {fileName !== null ? "Loaded information: " + fileName.replace(".json", "") : ""}
+                        {fileName !== null ? "Loaded information: Jobs from device " + beautifyFileName(fileName) : ""}
                     </Alert>
                     <ShowJobs Jobs={this.state.information.Jobs} />
                     <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>
@@ -110,7 +110,7 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
             return(
                 <div className="DeviceInfoShow">
                     <Alert color="primary">
-                        {fileName !== null ? "Loaded information: " + fileName.replace(".json", "") : ""}
+                        {fileName !== null ? "Loaded information: Identification from device " + beautifyFileName(fileName) : ""}
                     </Alert>
                     <ShowIdentification Identification={this.state.information.Identification}/>
                     <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>

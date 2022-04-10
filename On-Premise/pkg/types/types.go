@@ -11,6 +11,7 @@ type Message struct {
 	IPAddress  string `json:"IPAddress,omitempty"`
 	UploadInfo string `json:"UploadInfo,omitempty"`
 	UploadURL  string `json:"UploadURL,omitempty"`
+	DeviceName string `json:"DeviceName"`
 }
 
 // JobClient struct represent the struct that will be sent to devices when sending them a job

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {Alert, Button, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner, Table} from "reactstrap";
-import { URL } from "../utils/utils"
+import { URL, beautifyFileName } from "../utils/utils"
 
 interface IDeviceInfoList{
     jobs: string[],
@@ -63,16 +63,17 @@ class DeviceInfoList extends React.Component<{},IDeviceInfoList>{
         }
         return data.map((item) => {
             return(
-                <tr key={item} id={item} onClick={this.selectDeviceInfo} style={{color:"black"}}>
-                    <td>{item}</td>
+                <tr key={item} onClick={this.selectDeviceInfo} style={{color:"black"}}>
+                    <td id={item}>{beautifyFileName(item)}</td>
                 </tr>
             )
         })
     }
 
     selectDeviceInfo(e: React.MouseEvent<HTMLTableRowElement>){
-        const selectedRow = e.target as HTMLTableRowElement        
-        localStorage.setItem("requestedInfo", selectedRow.innerText)
+        const selectedRow = e.target as HTMLTableRowElement
+             
+        localStorage.setItem("requestedInfo", selectedRow.id)
         this.setState({
             redirect: true
         })

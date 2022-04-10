@@ -305,19 +305,17 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP := r.Header.Get("X-Device")
+	deviceName := r.Header.Get("X-Device")
 
-	err = utils.ValidateIPAddress(deviceIP)
-
-	if err != nil {
-		fmt.Println("Device IP Header missing or invalid IP address in the request")
+	if deviceName == "" {
+		fmt.Println("Device Name Header missing")
 		utils.BadRequest(w)
 		return
 	}
 
-	fmt.Printf("\nReceived Identification JSON from device: %v\n", deviceIP)
+	fmt.Printf("\nReceived Identification JSON from device: %v\n", deviceName)
 
-	fileName := "Identification-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
+	fileName := "Identification-" + strings.Replace(deviceName, ".", "_", 4) + ".json"
 	file, err := os.Create(fileName)
 
 	if err != nil {
@@ -381,19 +379,17 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP := r.Header.Get("X-Device")
+	deviceName := r.Header.Get("X-Device")
 
-	err = utils.ValidateIPAddress(deviceIP)
-
-	if err != nil {
-		fmt.Println("Device IP Header missing or invalid IP address in the request")
+	if deviceName == "" {
+		fmt.Println("Device Name Header missing")
 		utils.BadRequest(w)
 		return
 	}
 
-	fmt.Printf("\nReceived Jobs JSON from device: %v\n", deviceIP)
+	fmt.Printf("\nReceived Jobs JSON from device: %v\n", deviceName)
 
-	fileName := "Jobs-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
+	fileName := "Jobs-" + strings.Replace(deviceName, ".", "_", 4) + ".json"
 	file, err := os.Create(fileName)
 
 	if err != nil {
