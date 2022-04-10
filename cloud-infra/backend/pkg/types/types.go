@@ -11,6 +11,7 @@ type Message struct {
 	IPAddress  string `json:"IPAddress,omitempty"`
 	UploadInfo string `json:"UploadInfo,omitempty"`
 	UploadURL  string `json:"UploadURL,omitempty"`
+	DeviceName string `json:"DeviceName"`
 }
 
 // Information struct represents the names of the available files with information about the devices

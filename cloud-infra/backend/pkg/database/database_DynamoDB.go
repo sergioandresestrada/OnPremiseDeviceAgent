@@ -139,3 +139,39 @@ func (db *DynamoDB) DeviceExistWithNameAndIP(name string, ip string) (bool, erro
 	}
 	return false, nil
 }
+
+func (db *DynamoDB) DeviceFromName(name string) (string, error) {
+	expr, err := expression.NewBuilder().WithFilter(
+		expression.Equal(expression.Name("Name"), expression.Value(name)),
+	).Build()
+	if err != nil {
+		err = fmt.Errorf("error while building the expression: %w", err)
+		return "", err
+	}
+
+	out, err := db.dynamoDBClient.Scan(context.TODO(), &dynamodb.ScanInput{
+		TableName:                 aws.String(db.DevicesTableName),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+	})
+
+	if err != nil {
+		err = fmt.Errorf("error while scanning the DB: %w", err)
+		return "", err
+	}
+
+	if len(out.Items) == 0 {
+		return "", nil
+	}
+
+	device := types.Device{}
+	err = attributevalue.UnmarshalMap(out.Items[0], &device)
+	if err != nil {
+		err = fmt.Errorf("error unmarshalling device info: %w", err)
+		return "", err
+	}
+
+	return device.IP, nil
+
+}

@@ -258,3 +258,8 @@ export declare module Identification {
 
 }
 
+export interface DevicePublic {
+    Name: string;
+    Model: string;
+}
+

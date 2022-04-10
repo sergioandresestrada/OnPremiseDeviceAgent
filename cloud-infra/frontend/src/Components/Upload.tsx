@@ -1,6 +1,8 @@
 import React, { FormEvent } from "react";
-import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter} from 'reactstrap';
-import { URL, validateIP } from '../utils/utils';
+import { Link } from "react-router-dom";
+import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, Alert} from 'reactstrap';
+import { DevicePublic } from "../utils/types";
+import { URL } from '../utils/utils';
 import Help from "./Help";
 
 enum UploadInfoTypes {
@@ -9,7 +11,8 @@ enum UploadInfoTypes {
 }
 
 interface IUpload {
-    IPAddress? : string,
+    availableDevices : DevicePublic[],
+    selectedDeviceName : string,
     UploadInfo? : UploadInfoTypes,
 
     processingJob : boolean,
@@ -17,7 +20,8 @@ interface IUpload {
 }
 
 const initialState = {
-    IPAddress : "",
+    availableDevices : [] as DevicePublic[],
+    selectedDeviceName : '',
     UploadInfo : UploadInfoTypes["Jobs"],
 
     processingJob : false,
@@ -30,8 +34,28 @@ class Upload extends React.Component<{}, IUpload>{
         this.state = initialState
 
         this.handleSubmit = this.handleSubmit.bind(this)
-        this.handleChangeIP = this.handleChangeIP.bind(this)
         this.handleChangeUploadInfo = this.handleChangeUploadInfo.bind(this)
+        this.handleChangeSelectedDevice = this.handleChangeSelectedDevice.bind(this)
+    }
+
+    componentDidMount(){
+        fetch(URL + "/getPublicDevices")
+        .then(res => res.json())
+        .then(
+            (result) => {
+                this.setState({
+                    availableDevices: result as DevicePublic[]
+                })
+                if (this.state.availableDevices.length > 0){
+                    this.setState({
+                        selectedDeviceName : this.state.availableDevices[0].Name
+                    })
+                }
+            }
+        )
+        .catch(error => {
+            alert("There was an error connecting to the server, please try again later.")
+        })
     }
 
     handleSubmit(event : FormEvent){
@@ -40,10 +64,6 @@ class Upload extends React.Component<{}, IUpload>{
         let fetchOptions : object = {}
         let fullURL : string = ""
 
-        if(!validateIP(this.state.IPAddress)){
-            alert("Invalid IP address. Check it and try again.")
-            return
-        }
         fullURL = URL + "/upload"
         fetchOptions = {
             method: "POST",
@@ -52,7 +72,7 @@ class Upload extends React.Component<{}, IUpload>{
             },
             body: JSON.stringify({
                 type: "UPLOAD",
-                IPAddress: this.state.IPAddress,
+                DeviceName: this.state.selectedDeviceName,
                 UploadInfo : this.state.UploadInfo
             })
         }
@@ -89,9 +109,9 @@ class Upload extends React.Component<{}, IUpload>{
         })
     }
     
-    handleChangeIP(event: React.ChangeEvent<HTMLInputElement>){
+    handleChangeSelectedDevice(event : React.ChangeEvent<HTMLInputElement>){
         this.setState({
-            IPAddress : event.target.value
+            selectedDeviceName : event.target.value
         })
     }
 
@@ -102,19 +122,17 @@ class Upload extends React.Component<{}, IUpload>{
     }
 
     resetForm = () => {
+        let copyDevices = this.state.availableDevices
         this.setState(initialState)
+        this.setState({
+            availableDevices : copyDevices
+        })
     }
 
     render() {
         return(
             <div>
                 <FormRS onSubmit={this.handleSubmit}>
-                    <FormGroup>
-                        <Label for="IPAddress">Device IP Address</Label>
-                        <Input id="IPAddress" value={this.state.IPAddress} onChange={this.handleChangeIP}
-                                type="text" valid={validateIP(this.state.IPAddress)} invalid={!validateIP(this.state.IPAddress)}/>
-                    </FormGroup>
-
                     <FormGroup>
                         <Label for='uplaodInfo'>Select the information to request</Label>
                         <Input id='uplaodInfo' value={this.state.UploadInfo} onChange={this.handleChangeUploadInfo} type="select">
@@ -123,9 +141,25 @@ class Upload extends React.Component<{}, IUpload>{
                             })}
                         </Input>
                     </FormGroup>
-                    <FormGroup>
-                        <Input type="submit" value={"Request " + this.state.UploadInfo + " information"} />
-                    </FormGroup>
+
+                    {this.state.availableDevices.length === 0 &&
+                        <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
+                    }
+                    {this.state.availableDevices.length !== 0 &&
+                        <div>
+                            <FormGroup>
+                                <Label for='device'>Select the device</Label>
+                                <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
+                                    {this.state.availableDevices.map((dev)  => {
+                                        return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
+                                    })}
+                                </Input>            
+                            </FormGroup>
+                            <FormGroup>
+                                <Button type="submit" color="primary" outline style={{width:"100%"}}> {"Request " + this.state.UploadInfo + " information"}</Button>
+                            </FormGroup>
+                        </div>
+                    }
                 </FormRS>
                 
                 <Help 

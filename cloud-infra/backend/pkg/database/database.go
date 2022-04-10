@@ -8,4 +8,5 @@ type Database interface {
 	GetDevices() ([]types.Device, error)
 	InsertDevice(types.Device) error
 	DeviceExistWithNameAndIP(string, string) (bool, error)
+	DeviceFromName(string) (string, error)
 }

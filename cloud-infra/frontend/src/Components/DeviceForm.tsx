@@ -136,7 +136,7 @@ class DeviceForm extends React.Component<{},IDeviceForm> {
                         <Input onChange={this.handleChangeModel} type="text" id="deviceModel" value={this.state.deviceModel}/>
                     </FormGroup>
                     <FormGroup>
-                        <Input type="submit" value={"Save " + (this.state.isNewDevice ? "new device" : "changes")} readOnly/>
+                        <Button type="submit" color="primary" outline style={{width:"100%"}}> {"Save " + (this.state.isNewDevice ? "new device" : "changes")}</Button>
                     </FormGroup>
                 </FormRS>
 

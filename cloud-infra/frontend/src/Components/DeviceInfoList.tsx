@@ -71,8 +71,8 @@ class DeviceInfoList extends React.Component<{},IDeviceInfoList>{
     }
 
     selectDeviceInfo(e: React.MouseEvent<HTMLTableRowElement>){
-        const prueba = e.target as HTMLTableRowElement        
-        localStorage.setItem("requestedInfo", prueba.innerText)
+        const selectedRow = e.target as HTMLTableRowElement        
+        localStorage.setItem("requestedInfo", selectedRow.innerText)
         this.setState({
             redirect: true
         })

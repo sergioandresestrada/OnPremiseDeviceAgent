@@ -49,16 +49,45 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if message.DeviceName == "" {
+		fmt.Println("Device name field missing")
+		utils.BadRequest(w)
+		return
+	}
+
 	fmt.Printf("\nrequestBody: %s\n", requestBody)
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
+	fmt.Printf("Device name: %v\n", message.DeviceName)
 
 	if message.Message == "" || message.Type != "HEARTBEAT" {
 		utils.BadRequest(w)
 		return
 	}
 
-	err = s.queue.SendMessage(string(requestBody))
+	deviceIP, err := s.database.DeviceFromName(message.DeviceName)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if deviceIP == "" {
+		fmt.Printf("No device found with provided name\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	message.IPAddress = deviceIP
+
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	err = s.queue.SendMessage(string(messageJSON))
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
@@ -94,7 +123,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\nrequestBody: %s\n", r.FormValue("data"))
 	fmt.Printf("Type: %v\n", message.Type)
 
-	if message.Type != "JOB" || message.IPAddress == "" || message.Material == "" {
+	if message.Type != "JOB" || message.DeviceName == "" || message.Material == "" {
 		utils.BadRequest(w)
 		return
 	}
@@ -106,12 +135,20 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.ValidateIPAddress(message.IPAddress)
+	deviceIP, err := s.database.DeviceFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if deviceIP == "" {
+		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
+
+	message.IPAddress = deviceIP
 
 	file, fileHeader, err := r.FormFile("file")
 
@@ -132,7 +169,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 
 	rand.Seed(time.Now().UnixNano())
 	message.FileName = fileHeader.Filename
-	message.S3Name = strconv.Itoa(rand.Int())
+	message.S3Name = strconv.Itoa(rand.Int()) + " - " + message.FileName
 
 	err = s.objStorage.UploadFile(file, message.S3Name)
 
@@ -191,17 +228,25 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if message.Type != "UPLOAD" || message.IPAddress == "" || message.UploadInfo == "" {
+	if message.Type != "UPLOAD" || message.DeviceName == "" || message.UploadInfo == "" {
 		utils.BadRequest(w)
 		return
 	}
 
-	err = utils.ValidateIPAddress(message.IPAddress)
+	deviceIP, err := s.database.DeviceFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if deviceIP == "" {
+		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
+
+	message.IPAddress = deviceIP
 
 	err = utils.ValidateUploadInfo(message.UploadInfo)
 	if err != nil {
