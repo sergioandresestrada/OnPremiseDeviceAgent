@@ -586,6 +586,55 @@ func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\nServed the list of Devices\n")
 }
 
+func (s *Server) GetDeviceByUUID(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["uuid"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	device, err := s.database.GetDeviceByUUID(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Error while getting the device: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	// Checks if the item was found or returned value is empty
+	if device.Name == "" {
+		fmt.Printf("Device not found with given UUID\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	deviceJSON, err := json.Marshal(device)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(deviceJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the information of device with UUID: %v\n", deviceUUID)
+
+}
+
 func (s *Server) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)

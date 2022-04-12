@@ -76,6 +76,30 @@ func (db *DynamoDB) GetDevices() ([]types.Device, error) {
 	return devices, nil
 }
 
+func (db *DynamoDB) GetDeviceByUUID(uuid string) (types.Device, error) {
+	out, err := db.dynamoDBClient.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(db.DevicesTableName),
+		Key: map[string]DynamoDBTypes.AttributeValue{
+			"DeviceUUID": &DynamoDBTypes.AttributeValueMemberS{Value: uuid},
+		},
+	})
+
+	device := types.Device{}
+
+	if err != nil {
+		err = fmt.Errorf("error getting the device: %w", err)
+		return device, err
+	}
+
+	err = attributevalue.UnmarshalMap(out.Item, &device)
+	if err != nil {
+		err = fmt.Errorf("error unmarshalling device info: %w", err)
+		return device, err
+	}
+
+	return device, nil
+}
+
 // InsertDevice receives a Device and inserts it in the Device table from DynamoDB
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) InsertDevice(device types.Device) error {

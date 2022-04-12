@@ -78,6 +78,21 @@ func (mr *MockDatabaseMockRecorder) DeviceFromName(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeviceFromName", reflect.TypeOf((*MockDatabase)(nil).DeviceFromName), arg0)
 }
 
+// GetDeviceByUUID mocks base method.
+func (m *MockDatabase) GetDeviceByUUID(arg0 string) (types.Device, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDeviceByUUID", arg0)
+	ret0, _ := ret[0].(types.Device)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDeviceByUUID indicates an expected call of GetDeviceByUUID.
+func (mr *MockDatabaseMockRecorder) GetDeviceByUUID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDeviceByUUID", reflect.TypeOf((*MockDatabase)(nil).GetDeviceByUUID), arg0)
+}
+
 // GetDevices mocks base method.
 func (m *MockDatabase) GetDevices() ([]types.Device, error) {
 	m.ctrl.T.Helper()

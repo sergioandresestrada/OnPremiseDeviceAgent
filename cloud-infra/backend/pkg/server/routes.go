@@ -21,6 +21,7 @@ func (s *Server) Routes() {
 
 	// CRUD funtionality for devices
 	s.router.HandleFunc("/devices", s.GetDevices).Methods("GET", "OPTIONS")
+	s.router.HandleFunc("/devices/{uuid}", s.GetDeviceByUUID).Methods("GET", "OPTIONS")
 	s.router.HandleFunc("/devices", s.NewDevice).Methods("POST", "OPTIONS")
 	s.router.HandleFunc("/devices/{uuid}", s.DeleteDevice).Methods("DELETE", "OPTIONS")
 	s.router.HandleFunc("/devices/{uuid}", s.UpdateDevice).Methods("PUT", "OPTIONS")
