@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 // Message is just a reference to type Message in package types so that the usage is shorter
@@ -550,6 +551,127 @@ func (s *Server) GetPublicDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("\nServed the information of available Devices\n")
+
+}
+
+func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	devices, err := s.database.GetDevices()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	devicesJSON, err := json.Marshal(devices)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(devicesJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the list of Devices\n")
+}
+
+func (s *Server) DeleteDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["uuid"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	err := s.database.DeleteDeviceFromUUID(deviceUUID)
+	if err != nil {
+		fmt.Printf("Error while deleting the device\n")
+		utils.ServerError(w)
+		return
+	}
+
+	fmt.Printf("Deleted device with UUID %v\n", deviceUUID)
+	utils.OKRequest(w)
+}
+
+func (s *Server) UpdateDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["uuid"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
+		return
+	}
+
+	var device Device
+	err = json.Unmarshal(requestBody, &device)
+
+	if err != nil {
+		fmt.Println("New Device: Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if device.IP == "" || device.Name == "" {
+		fmt.Println("New Device: Invalid JSON provided as body, missing fields")
+		utils.BadRequest(w)
+		return
+	}
+
+	err = utils.ValidateIPAddress(device.IP)
+	if err != nil {
+		fmt.Println("Invalid IP address received")
+		utils.BadRequest(w)
+		return
+	}
+
+	device.DeviceUUID = deviceUUID
+
+	err = s.database.UpdateDevice(device)
+	if err != nil {
+		fmt.Printf("Error while updating: %v", err)
+		utils.ServerError(w)
+		return
+	}
+
+	fmt.Printf("Updated device with UUID %v\n", deviceUUID)
+	utils.OKRequest(w)
 
 }
 

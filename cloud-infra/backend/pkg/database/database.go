@@ -9,4 +9,6 @@ type Database interface {
 	InsertDevice(types.Device) error
 	DeviceExistWithNameAndIP(string, string) (bool, error)
 	DeviceFromName(string) (string, error)
+	DeleteDeviceFromUUID(string) error
+	UpdateDevice(types.Device) error
 }

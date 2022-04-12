@@ -175,3 +175,44 @@ func (db *DynamoDB) DeviceFromName(name string) (string, error) {
 	return device.IP, nil
 
 }
+
+func (db *DynamoDB) DeleteDeviceFromUUID(UUID string) error {
+	_, err := db.dynamoDBClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		TableName: aws.String(db.DevicesTableName),
+		Key: map[string]DynamoDBTypes.AttributeValue{
+			"DeviceUUID": &DynamoDBTypes.AttributeValueMemberS{Value: UUID},
+		},
+	})
+
+	return err
+}
+
+func (db *DynamoDB) UpdateDevice(device types.Device) error {
+
+	var updateExpression string
+	expressionAttributes := make(map[string]DynamoDBTypes.AttributeValue)
+
+	expressionAttributes[":IP"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.IP}
+	expressionAttributes[":Name"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.Name}
+
+	if device.Model == "" {
+		updateExpression = "set IP = :IP, #device_name = :Name"
+	} else {
+		expressionAttributes[":Model"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.Model}
+		updateExpression = "set IP = :IP, #device_name = :Name, Model= :Model"
+	}
+
+	_, err := db.dynamoDBClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(db.DevicesTableName),
+		Key: map[string]DynamoDBTypes.AttributeValue{
+			"DeviceUUID": &DynamoDBTypes.AttributeValueMemberS{Value: device.DeviceUUID},
+		},
+		UpdateExpression:          aws.String(updateExpression),
+		ExpressionAttributeValues: expressionAttributes,
+		ExpressionAttributeNames: map[string]string{
+			"#device_name": "Name",
+		},
+	})
+
+	return err
+}

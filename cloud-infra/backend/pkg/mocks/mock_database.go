@@ -34,6 +34,20 @@ func (m *MockDatabase) EXPECT() *MockDatabaseMockRecorder {
 	return m.recorder
 }
 
+// DeleteDeviceFromUUID mocks base method.
+func (m *MockDatabase) DeleteDeviceFromUUID(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDeviceFromUUID", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDeviceFromUUID indicates an expected call of DeleteDeviceFromUUID.
+func (mr *MockDatabaseMockRecorder) DeleteDeviceFromUUID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeviceFromUUID", reflect.TypeOf((*MockDatabase)(nil).DeleteDeviceFromUUID), arg0)
+}
+
 // DeviceExistWithNameAndIP mocks base method.
 func (m *MockDatabase) DeviceExistWithNameAndIP(arg0, arg1 string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -91,4 +105,18 @@ func (m *MockDatabase) InsertDevice(arg0 types.Device) error {
 func (mr *MockDatabaseMockRecorder) InsertDevice(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertDevice", reflect.TypeOf((*MockDatabase)(nil).InsertDevice), arg0)
+}
+
+// UpdateDevice mocks base method.
+func (m *MockDatabase) UpdateDevice(arg0 types.Device) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDevice", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDevice indicates an expected call of UpdateDevice.
+func (mr *MockDatabaseMockRecorder) UpdateDevice(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDevice", reflect.TypeOf((*MockDatabase)(nil).UpdateDevice), arg0)
 }

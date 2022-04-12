@@ -21,7 +21,7 @@ type Information struct {
 	Identification []string
 }
 
-// Device struct representes the information about a device that we have, readed from the Database or received
+// Device struct represents the information about a device that we have, readed from the Database or received
 // from an API call to create and store a new one
 type Device struct {
 	DeviceUUID string `json:"DeviceUUID,omitempty"`
