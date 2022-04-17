@@ -26,3 +26,10 @@ label {
     width: 800px;
     word-wrap: break-word;
 }
+
+.EditButton {
+    color : inherit
+}
+.EditButton:hover {
+    color : inherit
+}

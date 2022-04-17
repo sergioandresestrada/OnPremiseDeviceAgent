@@ -9,6 +9,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import DeviceInfoList from './Components/DeviceInfoList';
 import RequestedDeviceInfo from './Components/RequestedDeviceInfo';
 import DeviceForm from './Components/DeviceForm';
+import DeviceList from './Components/DeviceList';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -20,7 +21,9 @@ ReactDOM.render(
         <Route path="/" element={<Form />} />
         <Route path="/deviceInfoList" element={<DeviceInfoList/>} />
         <Route path="/deviceInfo" element={<RequestedDeviceInfo/>} />
-        <Route path="/devices/new" element={<DeviceForm/>} />
+        <Route path="/devices/new" element={<DeviceForm {...{isNewDevice: true}}/>} />
+        <Route path="/devices" element={<DeviceList/>} />
+        <Route path="/devices/edit/:uuid" element={<DeviceForm {...{isNewDevice: false}} />} />
         <Route
           path="*"
           element={

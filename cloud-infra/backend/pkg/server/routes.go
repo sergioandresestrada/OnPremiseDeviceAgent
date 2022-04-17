@@ -20,11 +20,14 @@ func (s *Server) Routes() {
 	s.router.HandleFunc("/getPublicDevices", s.GetPublicDevices).Methods("GET", "OPTIONS")
 
 	// CRUD funtionality for devices
-	s.router.HandleFunc("/devices", s.GetDevices).Methods("GET", "OPTIONS")
-	s.router.HandleFunc("/devices/{uuid}", s.GetDeviceByUUID).Methods("GET", "OPTIONS")
-	s.router.HandleFunc("/devices", s.NewDevice).Methods("POST", "OPTIONS")
-	s.router.HandleFunc("/devices/{uuid}", s.DeleteDevice).Methods("DELETE", "OPTIONS")
-	s.router.HandleFunc("/devices/{uuid}", s.UpdateDevice).Methods("PUT", "OPTIONS")
+	s.router.HandleFunc("/devices", s.DevicesCRUDOptionsHandler).Methods("OPTIONS")
+	s.router.HandleFunc("/devices/{uuid}", s.DevicesCRUDOptionsHandler).Methods("OPTIONS")
+
+	s.router.HandleFunc("/devices", s.GetDevices).Methods("GET")
+	s.router.HandleFunc("/devices/{uuid}", s.GetDeviceByUUID).Methods("GET")
+	s.router.HandleFunc("/devices", s.NewDevice).Methods("POST")
+	s.router.HandleFunc("/devices/{uuid}", s.DeleteDevice).Methods("DELETE")
+	s.router.HandleFunc("/devices/{uuid}", s.UpdateDevice).Methods("PUT")
 
 	// this are test handlers used to test UI without making unnecesary calls to AWS services
 	s.router.HandleFunc("/testjobs", s.TestJobs).Methods("GET", "OPTIONS")

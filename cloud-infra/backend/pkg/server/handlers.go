@@ -554,6 +554,12 @@ func (s *Server) GetPublicDevices(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (s *Server) DevicesCRUDOptionsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+}
+
 func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)

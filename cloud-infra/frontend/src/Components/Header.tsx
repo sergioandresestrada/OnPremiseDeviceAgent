@@ -37,16 +37,19 @@ class Header extends React.Component<{}, IHeader>{
                                     <Link to="/" style={{ color: "#0096D6", textDecoration: "none"}}>New Message</Link>
                             </NavItem>
                             
-                            <NavItem style={{ color: "#0096D6", padding:"0.5rem"}}>
-                                    <Link to="/deviceInfoList" style={{ color: "#0096D6", textDecoration: "none"}}>Device Information</Link>
+                            <NavItem style={{ color: "#0096D6", padding:"0.5rem", marginLeft: "0.5em"}}>
+                                    <Link to="/deviceInfoList" style={{ color: "#0096D6", textDecoration: "none"}}>Requested Device Information</Link>
                             </NavItem>
-                            <UncontrolledDropdown inNavbar nav >
+                            <UncontrolledDropdown inNavbar nav style={{ marginLeft: "0.5em"}}>
                                 <DropdownToggle caret nav style={{ color: "#0096D6", textDecoration: "none", padding:"0.5rem"}}>
                                     Devices
                                 </DropdownToggle>
                                 <DropdownMenu right>
                                     <DropdownItem>
-                                        <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>New Device</Link>
+                                        <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>New</Link>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <Link to="/devices" style={{ color: "#0096D6", textDecoration: "none"}}>List</Link>
                                     </DropdownItem>
                                 </DropdownMenu>
                             </UncontrolledDropdown>

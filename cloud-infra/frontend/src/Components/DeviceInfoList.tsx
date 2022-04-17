@@ -97,7 +97,7 @@ class DeviceInfoList extends React.Component<{},IDeviceInfoList>{
                 </div>
             )
         } 
-        /* Renders a modal while the information is being requested */
+        /* Renders a modal indicating that there was an error while requesting the information */
         if (errorInFetch){
             return(
             <Modal centered isOpen={true}>

@@ -218,13 +218,9 @@ func (db *DynamoDB) UpdateDevice(device types.Device) error {
 
 	expressionAttributes[":IP"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.IP}
 	expressionAttributes[":Name"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.Name}
+	expressionAttributes[":Model"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.Model}
 
-	if device.Model == "" {
-		updateExpression = "set IP = :IP, #device_name = :Name"
-	} else {
-		expressionAttributes[":Model"] = &DynamoDBTypes.AttributeValueMemberS{Value: device.Model}
-		updateExpression = "set IP = :IP, #device_name = :Name, Model= :Model"
-	}
+	updateExpression = "set IP = :IP, #device_name = :Name, Model= :Model"
 
 	_, err := db.dynamoDBClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(db.DevicesTableName),

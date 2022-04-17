@@ -263,3 +263,10 @@ export interface DevicePublic {
     Model: string;
 }
 
+export interface Device {
+    Name: string;
+    Model: string;
+    IP: string;
+    DeviceUUID: string;
+}
+
