@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 )
 
@@ -14,22 +15,26 @@ const ClientHBPort = "55555"
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (s *Service) Heartbeat(msg Message) error {
 	fmt.Println("Processing Heartbeat")
-	if msg.Message == "" {
+	if msg.Message == "" || msg.IPAddress == "" {
 		err := errors.New("some message's expected fields are missing")
 		return err
 	}
 
-	err := sendToClient(msg.Message)
+	err := sendToClient(msg)
 	return err
 }
 
-func sendToClient(message string) error {
-	host := "http://127.0.0.1"
+func sendToClient(message Message) error {
+	client := net.ParseIP(message.IPAddress)
+	if client == nil {
+		return errors.New("invalid client IP")
+	}
+	host := "http://" + client.String()
 	port := ClientHBPort
 
 	fmt.Printf("sending heartbeat to %s.\n", host)
 
-	res, err := http.Post(host+":"+port+"/heartbeat", "text/plain", bytes.NewBufferString(message))
+	res, err := http.Post(host+":"+port+"/heartbeat", "text/plain", bytes.NewBufferString(message.Message))
 
 	if err != nil {
 		err = fmt.Errorf("error performing the petition: %w", err)
