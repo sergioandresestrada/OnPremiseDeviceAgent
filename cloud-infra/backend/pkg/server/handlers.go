@@ -66,7 +66,7 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceFromName(message.DeviceName)
+	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
@@ -136,7 +136,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceFromName(message.DeviceName)
+	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
@@ -234,7 +234,7 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceFromName(message.DeviceName)
+	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
@@ -524,7 +524,7 @@ func (s *Server) GetInformationFile(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetPublicDevices is the handler used with GET /getPublicDevices endpoint
-// It will return the information about all the devices in JSON format
+// It will return the information (only name and model) about all the devices in JSON format
 // It will return status code 200 or 500 as appropiate
 func (s *Server) GetPublicDevices(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
@@ -554,12 +554,18 @@ func (s *Server) GetPublicDevices(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// DevicesCRUDOptionsHandler is the handler used with the verb OPTIONS and all endpoints related to devices
+// It will write the necessary headers
+// It will return status code 200
 func (s *Server) DevicesCRUDOptionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
 }
 
+// GetDevices is the handler used with GET /devices endpoint
+// It will return the information (UUID, name, IP and model) about all the devices in JSON format
+// It will return status code 200 or 500 as appropiate
 func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)
@@ -592,6 +598,9 @@ func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\nServed the list of Devices\n")
 }
 
+// GetDeviceByUUID is the handler used with GET /devices/{uuid} endpoint
+// It will return the information about the device with the UUID received as URL parameter
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) GetDeviceByUUID(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)
@@ -641,6 +650,9 @@ func (s *Server) GetDeviceByUUID(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// DeleteDevice is the handler used with DELETE /devices/{uuid} endpoint
+// It will delete the information about the device with the UUID received as URL parameter
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)
@@ -666,6 +678,9 @@ func (s *Server) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 	utils.OKRequest(w)
 }
 
+// UpdateDevice is the handler used with PUT /devices/{uuid} endpoint
+// It will update the information about the device with the UUID received as URL parameter
+// It will return status code 200, 400 or 500 as appropiate
 func (s *Server) UpdateDevice(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		utils.OKRequest(w)

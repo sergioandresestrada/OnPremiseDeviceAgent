@@ -26,7 +26,11 @@ func (s *Server) Jobs(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(files)
+	_, err = w.Write(files)
+	if err != nil {
+		fmt.Println("error writing the Jobs file in the petition")
+		return
+	}
 
 	fmt.Println("Served Jobs JSON file")
 }
@@ -46,7 +50,11 @@ func (s *Server) Identification(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(files)
+	_, err = w.Write(files)
+	if err != nil {
+		fmt.Println("error writing the Jobs file in the petition")
+		return
+	}
 
 	fmt.Println("Served Identification JSON file")
 }
@@ -66,7 +74,10 @@ func (s *Server) ReceiveJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var job types.JobDevice
-	json.Unmarshal([]byte(r.FormValue("job")), &job)
+	err = json.Unmarshal([]byte(r.FormValue("job")), &job)
+	if err != nil {
+		fmt.Println("error while unmarshalling the received Job form")
+	}
 
 	if job.FileName == "" || job.Material == "" {
 		fmt.Println("Missing field")

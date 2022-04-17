@@ -76,6 +76,8 @@ func (db *DynamoDB) GetDevices() ([]types.Device, error) {
 	return devices, nil
 }
 
+// GetDeviceByUUID receives a UUID and returns the correspoding device if exists, and an empty one otherwise.
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) GetDeviceByUUID(uuid string) (types.Device, error) {
 	out, err := db.dynamoDBClient.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(db.DevicesTableName),
@@ -164,7 +166,9 @@ func (db *DynamoDB) DeviceExistWithNameAndIP(name string, ip string) (bool, erro
 	return false, nil
 }
 
-func (db *DynamoDB) DeviceFromName(name string) (string, error) {
+// DeviceIPFromName receives a name and returns its IP address if exists, and an empty string otherwise.
+// Returns a non-nil error if there's one during the execution and nil otherwise
+func (db *DynamoDB) DeviceIPFromName(name string) (string, error) {
 	expr, err := expression.NewBuilder().WithFilter(
 		expression.Equal(expression.Name("Name"), expression.Value(name)),
 	).Build()
@@ -200,6 +204,8 @@ func (db *DynamoDB) DeviceFromName(name string) (string, error) {
 
 }
 
+// DeleteDeviceFromUUID receives a UUID and deletes the correspoding device from the database
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) DeleteDeviceFromUUID(UUID string) error {
 	_, err := db.dynamoDBClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 		TableName: aws.String(db.DevicesTableName),
@@ -211,6 +217,8 @@ func (db *DynamoDB) DeleteDeviceFromUUID(UUID string) error {
 	return err
 }
 
+// UpdateDevice receives a Device and update the device with matching UUID with the values of the received one
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) UpdateDevice(device types.Device) error {
 
 	var updateExpression string
