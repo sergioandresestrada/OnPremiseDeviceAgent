@@ -273,7 +273,7 @@ class DeviceForm extends React.Component<PDeviceForm,IDeviceForm> {
                     </FormGroup>
                     <FormGroup>
                         <Label for="deviceIP">Device IP Address</Label>
-                        <Input id="deviceIP" value={this.state.deviceIP} onChange={this.handleChangeIP}
+                        <Input id="deviceIP" value={this.state.deviceIP} onChange={this.handleChangeIP} required
                                 type="text" valid={validateIP(this.state.deviceIP)} invalid={!validateIP(this.state.deviceIP)}/>
                     </FormGroup>
                     <FormGroup>

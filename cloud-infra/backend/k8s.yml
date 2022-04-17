@@ -13,7 +13,7 @@ spec:
                 app: backend
         spec:
             containers:
-                - image: sergioandresestrada/cloud_backend:0.4
+                - image: sergioandresestrada/cloud_backend:0.5
                   name: backend
                   env:
                       - name: AWS_ACCESS_KEY_ID
@@ -34,6 +34,12 @@ spec:
 
                       - name: S3_BUCKET_NAME
                         value: "sergiotfgbucket"
+
+                      - name: DYNAMO_DB_DEVICES_TABLE_NAME
+                        value: "Devices"
+
+                      - name: DYNAMO_DB_MESSAGES_TABLE_NAME
+                        value: "Messages"
 
 ---
 apiVersion: v1
