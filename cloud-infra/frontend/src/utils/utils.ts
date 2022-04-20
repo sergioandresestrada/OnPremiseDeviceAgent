@@ -28,3 +28,9 @@ export function validateIP(ip: string | undefined) : boolean{
     }
     return false
 }
+
+// Just delete the type of information prefix and the file extension
+export function beautifyFileName(fn : string) : string {
+    return fn.replace("Jobs-", "").replace("Identification-","").replace(".json", "")
+}
+ 

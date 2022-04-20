@@ -38,9 +38,11 @@ func (s *Service) Run() {
 
 		for _, queueMsg := range receivedMessages {
 			var parsedMessage Message
-			json.Unmarshal([]byte(*queueMsg.Body), &parsedMessage)
-
-			var err error = nil
+			err := json.Unmarshal([]byte(*queueMsg.Body), &parsedMessage)
+			if err != nil {
+				fmt.Println("Error while unmarshalling the message")
+				continue
+			}
 
 			switch parsedMessage.Type {
 			case "HEARTBEAT":

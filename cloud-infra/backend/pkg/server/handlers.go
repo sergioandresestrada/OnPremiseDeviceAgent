@@ -14,10 +14,16 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 // Message is just a reference to type Message in package types so that the usage is shorter
 type Message = types.Message
+
+// Device is just a reference to type Device in package types so that the usage is shorter
+type Device = types.Device
 
 // Heartbeat is the handler used with POST and OPTIONS /heartbeat endpoint
 // It will validate the received JSON, if valid, and send the corresponding message to the queue
@@ -44,16 +50,45 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if message.DeviceName == "" {
+		fmt.Println("Device name field missing")
+		utils.BadRequest(w)
+		return
+	}
+
 	fmt.Printf("\nrequestBody: %s\n", requestBody)
 	fmt.Printf("Message content received: %v\n", message.Message)
 	fmt.Printf("Type: %v\n", message.Type)
+	fmt.Printf("Device name: %v\n", message.DeviceName)
 
 	if message.Message == "" || message.Type != "HEARTBEAT" {
 		utils.BadRequest(w)
 		return
 	}
 
-	err = s.queue.SendMessage(string(requestBody))
+	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if deviceIP == "" {
+		fmt.Printf("No device found with provided name\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	message.IPAddress = deviceIP
+
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	err = s.queue.SendMessage(string(messageJSON))
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
@@ -89,7 +124,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\nrequestBody: %s\n", r.FormValue("data"))
 	fmt.Printf("Type: %v\n", message.Type)
 
-	if message.Type != "JOB" || message.IPAddress == "" || message.Material == "" {
+	if message.Type != "JOB" || message.DeviceName == "" || message.Material == "" {
 		utils.BadRequest(w)
 		return
 	}
@@ -101,12 +136,20 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.ValidateIPAddress(message.IPAddress)
+	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if deviceIP == "" {
+		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
+
+	message.IPAddress = deviceIP
 
 	file, fileHeader, err := r.FormFile("file")
 
@@ -127,7 +170,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 
 	rand.Seed(time.Now().UnixNano())
 	message.FileName = fileHeader.Filename
-	message.S3Name = strconv.Itoa(rand.Int())
+	message.S3Name = strconv.Itoa(rand.Int()) + " - " + message.FileName
 
 	err = s.objStorage.UploadFile(file, message.S3Name)
 
@@ -186,17 +229,25 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if message.Type != "UPLOAD" || message.IPAddress == "" || message.UploadInfo == "" {
+	if message.Type != "UPLOAD" || message.DeviceName == "" || message.UploadInfo == "" {
 		utils.BadRequest(w)
 		return
 	}
 
-	err = utils.ValidateIPAddress(message.IPAddress)
+	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if deviceIP == "" {
+		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
+
+	message.IPAddress = deviceIP
 
 	err = utils.ValidateUploadInfo(message.UploadInfo)
 	if err != nil {
@@ -255,19 +306,17 @@ func (s *Server) UploadIdentification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP := r.Header.Get("X-Device")
+	deviceName := r.Header.Get("X-Device")
 
-	err = utils.ValidateIPAddress(deviceIP)
-
-	if err != nil {
-		fmt.Println("Device IP Header missing or invalid IP address in the request")
+	if deviceName == "" {
+		fmt.Println("Device Name Header missing")
 		utils.BadRequest(w)
 		return
 	}
 
-	fmt.Printf("\nReceived Identification JSON from device: %v\n", deviceIP)
+	fmt.Printf("\nReceived Identification JSON from device: %v\n", deviceName)
 
-	fileName := "Identification-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
+	fileName := "Identification-" + strings.Replace(deviceName, ".", "_", 4) + ".json"
 	file, err := os.Create(fileName)
 
 	if err != nil {
@@ -331,19 +380,17 @@ func (s *Server) UploadJobs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP := r.Header.Get("X-Device")
+	deviceName := r.Header.Get("X-Device")
 
-	err = utils.ValidateIPAddress(deviceIP)
-
-	if err != nil {
-		fmt.Println("Device IP Header missing or invalid IP address in the request")
+	if deviceName == "" {
+		fmt.Println("Device Name Header missing")
 		utils.BadRequest(w)
 		return
 	}
 
-	fmt.Printf("\nReceived Jobs JSON from device: %v\n", deviceIP)
+	fmt.Printf("\nReceived Jobs JSON from device: %v\n", deviceName)
 
-	fileName := "Jobs-" + strings.Replace(deviceIP, ".", "_", 4) + ".json"
+	fileName := "Jobs-" + strings.Replace(deviceName, ".", "_", 4) + ".json"
 	file, err := os.Create(fileName)
 
 	if err != nil {
@@ -473,6 +520,301 @@ func (s *Server) GetInformationFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("\nServed file %s\n", key)
+
+}
+
+// GetPublicDevices is the handler used with GET /getPublicDevices endpoint
+// It will return the information (only name and model) about all the devices in JSON format
+// It will return status code 200 or 500 as appropiate
+func (s *Server) GetPublicDevices(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	devices, err := s.database.GetDevices()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	publicJSON := utils.DevicesToPublicJSON(devices)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(publicJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the information of available Devices\n")
+
+}
+
+// DevicesCRUDOptionsHandler is the handler used with the verb OPTIONS and all endpoints related to devices
+// It will write the necessary headers
+// It will return status code 200
+func (s *Server) DevicesCRUDOptionsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+}
+
+// GetDevices is the handler used with GET /devices endpoint
+// It will return the information (UUID, name, IP and model) about all the devices in JSON format
+// It will return status code 200 or 500 as appropiate
+func (s *Server) GetDevices(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	devices, err := s.database.GetDevices()
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	devicesJSON, err := json.Marshal(devices)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(devicesJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the list of Devices\n")
+}
+
+// GetDeviceByUUID is the handler used with GET /devices/{uuid} endpoint
+// It will return the information about the device with the UUID received as URL parameter
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) GetDeviceByUUID(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["uuid"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	device, err := s.database.GetDeviceByUUID(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Error while getting the device: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	// Checks if the item was found or returned value is empty
+	if device.Name == "" {
+		fmt.Printf("Device not found with given UUID\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	deviceJSON, err := json.Marshal(device)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(deviceJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the information of device with UUID: %v\n", deviceUUID)
+
+}
+
+// DeleteDevice is the handler used with DELETE /devices/{uuid} endpoint
+// It will delete the information about the device with the UUID received as URL parameter
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) DeleteDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["uuid"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	err := s.database.DeleteDeviceFromUUID(deviceUUID)
+	if err != nil {
+		fmt.Printf("Error while deleting the device\n")
+		utils.ServerError(w)
+		return
+	}
+
+	fmt.Printf("Deleted device with UUID %v\n", deviceUUID)
+	utils.OKRequest(w)
+}
+
+// UpdateDevice is the handler used with PUT /devices/{uuid} endpoint
+// It will update the information about the device with the UUID received as URL parameter
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) UpdateDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["uuid"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
+		return
+	}
+
+	var device Device
+	err = json.Unmarshal(requestBody, &device)
+
+	if err != nil {
+		fmt.Println("New Device: Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if device.IP == "" || device.Name == "" {
+		fmt.Println("New Device: Invalid JSON provided as body, missing fields")
+		utils.BadRequest(w)
+		return
+	}
+
+	err = utils.ValidateIPAddress(device.IP)
+	if err != nil {
+		fmt.Println("Invalid IP address received")
+		utils.BadRequest(w)
+		return
+	}
+
+	device.DeviceUUID = deviceUUID
+
+	err = s.database.UpdateDevice(device)
+	if err != nil {
+		fmt.Printf("Error while updating: %v", err)
+		utils.ServerError(w)
+		return
+	}
+
+	fmt.Printf("Updated device with UUID %v\n", deviceUUID)
+	utils.OKRequest(w)
+
+}
+
+// NewDevice is the handler used with POST /devices endpoint
+// It preforms all the necessary checking and, if everything is correct, will insert a new device to the DB
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) NewDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
+		return
+	}
+
+	var device Device
+	err = json.Unmarshal(requestBody, &device)
+
+	if err != nil {
+		fmt.Println("New Device: Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if device.IP == "" || device.Name == "" {
+		fmt.Println("New Device: Invalid JSON provided as body, missing fields")
+		utils.BadRequest(w)
+		return
+	}
+
+	err = utils.ValidateIPAddress(device.IP)
+	if err != nil {
+		fmt.Println("Invalid IP address received")
+		utils.BadRequest(w)
+		return
+	}
+
+	exists, err := s.database.DeviceExistWithNameAndIP(device.Name, device.IP)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	if exists {
+		fmt.Println("The device Name or IP provided already exist")
+		utils.BadRequest(w)
+		return
+	}
+
+	device.DeviceUUID = uuid.NewString()
+
+	err = s.database.InsertDevice(device)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	fmt.Println("Device inserted successfully")
 
 }
 

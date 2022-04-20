@@ -3,6 +3,7 @@ package server
 import (
 	"backend/pkg/mocks"
 	"backend/pkg/types"
+	"backend/pkg/utils"
 	"bytes"
 	"fmt"
 	"io"
@@ -28,12 +29,17 @@ func TestHeartbeat(t *testing.T) {
 	// Object Storage not used in Heartbeat Handler but we need to pass one to the server struct
 	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
+	mockDatabase := mocks.NewMockDatabase(mockCtrl)
+
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
 
+	// We assume database never returns an error and always gives a valid IP back
+	mockDatabase.EXPECT().DeviceIPFromName(gomock.Any()).Return("127.0.0.1", nil).AnyTimes()
+
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -43,8 +49,9 @@ func TestHeartbeat(t *testing.T) {
 	}{
 		{nil, http.StatusBadRequest, "Empty request body"},
 		{[]byte(`{"type":"HEARTBEAT"}`), http.StatusBadRequest, "Message is empty"},
-		{[]byte(`{"message":"placeholder", "type":"JOB"}`), http.StatusBadRequest, "Type is incorrect"},
-		{[]byte(`{"message":"placeholder", "type":"HEARTBEAT"}`), http.StatusOK, "Good request"},
+		{[]byte(`{"type":"HEARTBEAT", "message":"placeholder"}`), http.StatusBadRequest, "Device Name is empty"},
+		{[]byte(`{"message":"placeholder", "type":"JOB", "DeviceName":"device"}`), http.StatusBadRequest, "Type is incorrect"},
+		{[]byte(`{"message":"placeholder", "type":"HEARTBEAT", "DeviceName":"device"}`), http.StatusOK, "Good request"},
 	}
 
 	for i, tt := range tc {
@@ -69,16 +76,20 @@ func TestJob(t *testing.T) {
 
 	mockQueue := mocks.NewMockQueue(mockCtrl)
 	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
+	mockDatabase := mocks.NewMockDatabase(mockCtrl)
 
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
+
+	// We assume database never returns an error and always gives a valid IP back
+	mockDatabase.EXPECT().DeviceIPFromName(gomock.Any()).Return("127.0.0.1", nil).AnyTimes()
 
 	// The mocked object storage will return nil as error when called with any values
 	mockObjStorage.EXPECT().UploadFile(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -88,10 +99,11 @@ func TestJob(t *testing.T) {
 		testName           string
 	}{
 		{nil, "", http.StatusBadRequest, "Empty request"}, // empty request
-		{[]byte(`{"type":"HEARTBEAT", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "", http.StatusBadRequest, "Wrong type"}, // Wrong type
-		{[]byte(`{"type":"JOB"}`), "", http.StatusBadRequest, "Missing field"},                                                        // Missing field
-		{[]byte(`{"type":"JOB", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "", http.StatusBadRequest, "Missing file"},     // Missing file
-		{[]byte(`{"type":"JOB", "IPAddress" : "127.0.0.1", "material":"HR PA 12GB"}`), "sample.pdf", http.StatusOK, "Good request"},   // All good
+		{[]byte(`{"type":"HEARTBEAT", "DeviceName" : "device", "material":"HR PA 12GB"}`), "", http.StatusBadRequest, "Wrong type"}, // Wrong type
+		{[]byte(`{"type":"JOB", "DeviceName" : "device"}`), "", http.StatusBadRequest, "Missing material"},
+		{[]byte(`{"type":"JOB", "material" : "HR PA 12GB"}`), "", http.StatusBadRequest, "Missing device name"},                   // Missing field
+		{[]byte(`{"type":"JOB", "DeviceName" : "device", "material":"HR PA 12GB"}`), "", http.StatusBadRequest, "Missing file"},   // Missing file
+		{[]byte(`{"type":"JOB", "DeviceName" : "device", "material":"HR PA 12GB"}`), "sample.pdf", http.StatusOK, "Good request"}, // All good
 	}
 
 	for i, tt := range tc {
@@ -159,12 +171,17 @@ func TestUpload(t *testing.T) {
 	// Object Storage not used in Upload Handler but we need to pass one to the server struct
 	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
 
+	mockDatabase := mocks.NewMockDatabase(mockCtrl)
+
+	// We assume database never returns an error and always gives a valid IP back
+	mockDatabase.EXPECT().DeviceIPFromName(gomock.Any()).Return("127.0.0.1", nil).AnyTimes()
+
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -173,12 +190,12 @@ func TestUpload(t *testing.T) {
 		expectedStatusCode int
 		testName           string
 	}{
-		{[]byte(`placeholder`), "text/plain", http.StatusBadRequest, "Invalid content type"},                                                                         // invalid content type
-		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "Invalid JSON format"},                                                                  // invalid JSON format
-		{[]byte(`{"IPAddress" : "127.0.0.1", "type":"JOB", "UploadInfo":"Jobs"}`), "application/json", http.StatusBadRequest, "Invalid Type field"},                  // Invalid Type field
-		{[]byte(`{"IPAddress" : "999.999.0.0", "type":"UPLOAD", "UploadInfo":"Jobs"}`), "application/json", http.StatusBadRequest, "Invalid IP address"},             // Invalid IP field
-		{[]byte(`{"IPAddress" : "127.0.0.1", "type":"UPLOAD", "UploadInfo":"placeholder"}`), "application/json", http.StatusBadRequest, "Invalid Upload Info field"}, // Invalid UploadInfo field
-		{[]byte(`{"IPAddress" : "127.0.0.1", "type":"UPLOAD", "UploadInfo":"Jobs"}`), "application/json", http.StatusOK, "Good request"},                             // Invalid UploadInfo field
+		{[]byte(`placeholder`), "text/plain", http.StatusBadRequest, "Invalid content type"},
+		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "Invalid JSON format"},
+		{[]byte(`{"DeviceName" : "device", "type":"JOB", "UploadInfo":"Jobs"}`), "application/json", http.StatusBadRequest, "Invalid Type field"},
+		{[]byte(`{"type":"UPLOAD", "UploadInfo":"Jobs"}`), "application/json", http.StatusBadRequest, "Missing device name field"},
+		{[]byte(`{"DeviceName" : "device", "type":"UPLOAD", "UploadInfo":"placeholder"}`), "application/json", http.StatusBadRequest, "Invalid Upload Info field"},
+		{[]byte(`{"DeviceName" : "device", "type":"UPLOAD", "UploadInfo":"Jobs"}`), "application/json", http.StatusOK, "Good request"},
 	}
 
 	for i, tt := range tc {
@@ -207,26 +224,26 @@ func TestUploadIdentification(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
 		body               []byte
 		contentType        string
 		expectedStatusCode int
-		deviceIP           string
+		deviceName         string
 		testName           string
 	}{
-		{[]byte(`{}`), "text/plain", http.StatusBadRequest, "127.0.0.1", "Invalid content type"},
-		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "127.0.0.1", "Invalid JSON format"},
-		{[]byte(`{"identification": "placeholder"}`), "application/json", http.StatusBadRequest, "999.999.9.9", "Invalid IP address"},
-		{[]byte(`{"identification": "placeholder"}`), "application/json", http.StatusOK, "127.0.0.1", "Good request"},
+		{[]byte(`{}`), "text/plain", http.StatusBadRequest, "deviceName", "Invalid content type"},
+		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "deviceName", "Invalid JSON format"},
+		{[]byte(`{"identification": "placeholder"}`), "application/json", http.StatusBadRequest, "", "Empty device name"},
+		{[]byte(`{"identification": "placeholder"}`), "application/json", http.StatusOK, "deviceName", "Good request"},
 	}
 
 	for i, tt := range tc {
 		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
 			req := httptest.NewRequest("POST", "/uploadIdentification", bytes.NewBuffer(tt.body))
-			req.Header.Set("X-Device", tt.deviceIP)
+			req.Header.Set("X-Device", tt.deviceName)
 			req.Header.Set("Content-Type", tt.contentType)
 
 			w := httptest.NewRecorder()
@@ -251,26 +268,26 @@ func TestUploadJobs(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
 		body               []byte
 		contentType        string
 		expectedStatusCode int
-		deviceIP           string
+		deviceName         string
 		testName           string
 	}{
-		{[]byte(`{}`), "text/plain", http.StatusBadRequest, "127.0.0.1", "Invalid content type"},
-		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "127.0.0.1", "Invalid JSON format"},
-		{[]byte(`{"jobs": "placeholder"}`), "application/json", http.StatusBadRequest, "999.999.9.9", "Invalid IP address"},
-		{[]byte(`{"jobs": "placeholder"}`), "application/json", http.StatusOK, "127.0.0.1", "Good request"},
+		{[]byte(`{}`), "text/plain", http.StatusBadRequest, "deviceName", "Invalid content type"},
+		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "deviceName", "Invalid JSON format"},
+		{[]byte(`{"jobs": "placeholder"}`), "application/json", http.StatusBadRequest, "", "Empty device name"},
+		{[]byte(`{"jobs": "placeholder"}`), "application/json", http.StatusOK, "deviceName", "Good request"},
 	}
 
 	for i, tt := range tc {
 		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
 			req := httptest.NewRequest("POST", "/uploadJobs", bytes.NewBuffer(tt.body))
-			req.Header.Set("X-Device", tt.deviceIP)
+			req.Header.Set("X-Device", tt.deviceName)
 			req.Header.Set("Content-Type", tt.contentType)
 
 			w := httptest.NewRecorder()
@@ -297,7 +314,7 @@ func TestAvailableInformation(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -335,7 +352,7 @@ func TestGetInformationFile(t *testing.T) {
 
 	router := mux.NewRouter()
 
-	server := NewServer(mockQueue, mockObjStorage, router)
+	server := NewServer(mockQueue, mockObjStorage, nil, router)
 	server.Routes()
 
 	var tc = []struct {
@@ -361,6 +378,137 @@ func TestGetInformationFile(t *testing.T) {
 
 			req := httptest.NewRequest("GET", "/getInformationFile"+tt.requestAdditionalPath, nil)
 
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestGetPublicDevices(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+
+	// Object Storage not used in Upload Handler but we need to pass one to the server struct
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
+
+	mockDatabase := mocks.NewMockDatabase(mockCtrl)
+
+	router := mux.NewRouter()
+	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
+	server.Routes()
+
+	deviceEmpty := types.Device{}
+
+	deviceFull := types.Device{
+		IP:         "placeholder",
+		DeviceUUID: "placeholder",
+		Name:       "deviceFullName",
+		Model:      "deviceFullModel",
+	}
+
+	deviceNoModel := types.Device{
+		IP:         "placeholder",
+		DeviceUUID: "placeholder",
+		Name:       "deviceNoModelName",
+	}
+
+	// function utils.DevicesToPublicJSON is tested on its own so we assume here that it works fine
+
+	var tc = []struct {
+		returnedDevices      []types.Device
+		databaseError        error
+		expectedStatusCode   int
+		expectedResponseBody []byte
+		testName             string
+	}{
+		{[]types.Device{}, nil, 200, []byte(utils.DevicesToPublicJSON([]types.Device{})), "OK no devices"},
+		{[]types.Device{deviceEmpty, deviceFull, deviceNoModel}, nil, 200, []byte(utils.DevicesToPublicJSON([]types.Device{deviceEmpty, deviceFull, deviceNoModel})), "OK with devices"},
+		{[]types.Device{}, fmt.Errorf("error"), 500, []byte{}, "Server error"},
+	}
+
+	for i, tt := range tc {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			mockDatabase.EXPECT().GetDevices().Return(tt.returnedDevices, tt.databaseError).Times(1)
+			req := httptest.NewRequest("GET", "/getPublicDevices", bytes.NewBuffer(nil))
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+			body, _ := io.ReadAll(w.Result().Body)
+			if string(body) != string(tt.expectedResponseBody) {
+				t.Errorf("Expected response body %v, got %v", string(tt.expectedResponseBody), string(body))
+			}
+		})
+	}
+}
+
+func TestNewDevice(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
+
+	mockDatabase := mocks.NewMockDatabase(mockCtrl)
+
+	router := mux.NewRouter()
+
+	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
+	server.Routes()
+
+	var testCasesNoDBinvolved = []struct {
+		body               []byte
+		contentType        string
+		expectedStatusCode int
+		testName           string
+	}{
+		{[]byte(`placeholder`), "text/plain", http.StatusBadRequest, "Invalid content type"},
+		{[]byte(`()!!)(""·!!))`), "application/json", http.StatusBadRequest, "Invalid JSON format"},
+		{[]byte(`{"Name":"devName"}`), "application/json", http.StatusBadRequest, "Missing device IP field"},
+		{[]byte(`{"IP":"127.0.0.1"}`), "application/json", http.StatusBadRequest, "Missing device name field"},
+		{[]byte(`{"IP":"123456789","Name":"devName"}`), "application/json", http.StatusBadRequest, "Invalid IP provided"},
+	}
+
+	for i, tt := range testCasesNoDBinvolved {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			req := httptest.NewRequest("POST", "/devices", bytes.NewBuffer(tt.body))
+			req.Header.Set("Content-Type", tt.contentType)
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+
+	var testCasesDBinvolved = []struct {
+		body               []byte
+		contentType        string
+		expectedStatusCode int
+		alreadyExists      bool
+		insertError        error
+		testName           string
+	}{
+		{[]byte(`{"IP":"127.0.0.1","Name":"devName"}`), "application/json", http.StatusBadRequest, true, nil, "Device already exists"},
+	}
+
+	for i, tt := range testCasesDBinvolved {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			mockDatabase.EXPECT().DeviceExistWithNameAndIP(gomock.Any(), gomock.Any()).Return(tt.alreadyExists, nil).Times(1)
+
+			if !tt.alreadyExists {
+				mockDatabase.EXPECT().InsertDevice(gomock.Any()).Return(tt.insertError).Times(1)
+			}
+
+			req := httptest.NewRequest("POST", "/devices", bytes.NewBuffer(tt.body))
+			req.Header.Set("Content-Type", tt.contentType)
 			w := httptest.NewRecorder()
 			server.router.ServeHTTP(w, req)
 			if w.Result().StatusCode != tt.expectedStatusCode {

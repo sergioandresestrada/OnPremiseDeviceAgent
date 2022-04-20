@@ -1,6 +1,7 @@
 package server
 
 import (
+	"backend/pkg/database"
 	objstorage "backend/pkg/obj_storage"
 	"backend/pkg/queue"
 	"log"
@@ -15,13 +16,14 @@ import (
 type Server struct {
 	queue      queue.Queue
 	objStorage objstorage.ObjStorage
+	database   database.Database
 	router     *mux.Router
 	serverURL  string
 }
 
 // NewServer creates and returns the reference to a new Server struct
 // It sets the serverURL field to the corresponding Environment variable value, and panics if it not present
-func NewServer(queue queue.Queue, objStorage objstorage.ObjStorage, router *mux.Router) *Server {
+func NewServer(queue queue.Queue, objStorage objstorage.ObjStorage, database database.Database, router *mux.Router) *Server {
 	url, ok := os.LookupEnv("SERVER_URL")
 	if !ok {
 		panic("Environment variable SERVER_URL does not exist")
@@ -31,6 +33,7 @@ func NewServer(queue queue.Queue, objStorage objstorage.ObjStorage, router *mux.
 		router:     router,
 		queue:      queue,
 		objStorage: objStorage,
+		database:   database,
 		serverURL:  url}
 	return s
 }

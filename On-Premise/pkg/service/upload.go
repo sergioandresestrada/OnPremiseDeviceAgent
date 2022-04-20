@@ -19,7 +19,7 @@ const ClientPort = "55555"
 func (s *Service) Upload(msg Message) error {
 	fmt.Println("Processing Upload")
 
-	if msg.IPAddress == "" || msg.UploadInfo == "" || msg.UploadURL == "" {
+	if msg.IPAddress == "" || msg.UploadInfo == "" || msg.UploadURL == "" || msg.DeviceName == "" {
 		err := errors.New("some message's expected fields are missing")
 		return err
 	}
@@ -30,7 +30,7 @@ func (s *Service) Upload(msg Message) error {
 		return fmt.Errorf("error receiving information from the device: %w", err)
 	}
 
-	err = sendInfoToBackend(buffer, msg.UploadURL, msg.IPAddress)
+	err = sendInfoToBackend(buffer, msg.UploadURL, msg.DeviceName)
 	if err != nil {
 		return fmt.Errorf("error while sending the information to the backend: %w", err)
 	}
@@ -70,7 +70,7 @@ func receiveInfoFromDevice(msg Message) ([]byte, error) {
 	return body, nil
 }
 
-func sendInfoToBackend(info []byte, url string, deviceIP string) error {
+func sendInfoToBackend(info []byte, url string, deviceName string) error {
 	httpClient := &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -82,7 +82,7 @@ func sendInfoToBackend(info []byte, url string, deviceIP string) error {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Device", deviceIP)
+	req.Header.Set("X-Device", deviceName)
 	res, err := httpClient.Do(req)
 
 	if err != nil {

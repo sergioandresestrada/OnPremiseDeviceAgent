@@ -1,6 +1,7 @@
 import React, { FormEvent } from "react";
-import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, FormText} from 'reactstrap';
-import { isValidFile, URL, validateIP } from '../utils/utils';
+import { Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner, Button, ModalFooter, FormText } from 'reactstrap';
+import { DevicePublic } from "../utils/types";
+import { isValidFile, URL } from '../utils/utils';
 import Help from "./Help";
 
 enum Material {
@@ -11,10 +12,14 @@ enum Material {
     "HR PA 12" = "HR PA 12"
 }
 
+interface PJob{
+    devices : DevicePublic[]
+}
+
 interface IJob{
     file? : File,
     material? : Material,
-    IPAddress? : string,
+    selectedDeviceName : string
 
     processingJob : boolean,
     submitOutcome : string
@@ -23,13 +28,14 @@ interface IJob{
 const initialState = {
     file : undefined,
     material : Material['HR PA 11'],
-    IPAddress : "",
+    selectedDeviceName : '',
+
 
     processingJob : false,
     submitOutcome : ''
 }
 
-class Job extends React.Component<{}, IJob>{
+class Job extends React.Component<PJob, IJob>{
     constructor(props: any){
         super(props)
         this.state = initialState
@@ -37,7 +43,13 @@ class Job extends React.Component<{}, IJob>{
         this.handleSubmit = this.handleSubmit.bind(this)
         this.handleChangeFile = this.handleChangeFile.bind(this)
         this.handleChangeMaterial = this.handleChangeMaterial.bind(this)
-        this.handleChangeIP = this.handleChangeIP.bind(this)
+        this.handleChangeSelectedDevice = this.handleChangeSelectedDevice.bind(this)
+    }
+
+    componentDidMount(){
+        this.setState({
+            selectedDeviceName : this.props.devices[0].Name
+        })
     }
 
     handleSubmit(event : FormEvent){
@@ -54,16 +66,13 @@ class Job extends React.Component<{}, IJob>{
             alert("Invalid file selected. Please select a PDF or STL file and try again")
             return
         }
-        if(!validateIP(this.state.IPAddress)){
-            alert("Invalid IP address. Check it and try again.")
-            return
-        }
+
         fullURL = URL + "/job"
         let formData = new FormData()
         let data = JSON.stringify({
             type: "JOB",
             material: this.state.material,
-            IPAddress: this.state.IPAddress
+            DeviceName: this.state.selectedDeviceName
         })
         formData.append("data", data)
         formData.append("file", this.state.file)
@@ -119,14 +128,17 @@ class Job extends React.Component<{}, IJob>{
         })
     }
 
-    handleChangeIP(event: React.ChangeEvent<HTMLInputElement>){
+    handleChangeSelectedDevice(event : React.ChangeEvent<HTMLInputElement>){
         this.setState({
-            IPAddress : event.target.value
+            selectedDeviceName : event.target.value
         })
     }
 
     resetForm = () => {
         this.setState(initialState)
+        this.setState({            
+            selectedDeviceName : this.props.devices[0].Name
+        })
     }
 
     render(){
@@ -142,11 +154,6 @@ class Job extends React.Component<{}, IJob>{
                         </Input>
                     </FormGroup>
                     <FormGroup>
-                        <Label for="IPAddress">Device IP Address</Label>
-                        <Input id="IPAddress" value={this.state.IPAddress} onChange={this.handleChangeIP}
-                                type="text" valid={validateIP(this.state.IPAddress)} invalid={!validateIP(this.state.IPAddress)}/>
-                    </FormGroup>
-                    <FormGroup>
                         <Label for="file">File</Label>
                         <Input id="file" name="file" type="file" 
                             accept='.pdf, .stl' 
@@ -154,7 +161,15 @@ class Job extends React.Component<{}, IJob>{
                         <FormText>Select the file to send to the job</FormText>
                     </FormGroup>
                     <FormGroup>
-                        <Input type="submit" value="Print"/>
+                        <Label for='device'>Select the device</Label>
+                        <Input id='device' value={this.state.selectedDeviceName} onChange={this.handleChangeSelectedDevice} type="select">
+                            {this.props.devices.map((dev)  => {
+                                return <option key={dev.Name} value={dev.Name}>{dev.Name + (dev.Model === undefined ? "" : (" - " + dev.Model))}</option>
+                            })}
+                        </Input>            
+                    </FormGroup>
+                    <FormGroup>
+                        <Button type="submit" color="primary" outline style={{width:"100%"}}>Print</Button>
                     </FormGroup>
                 </FormRS>
 

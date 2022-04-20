@@ -70,7 +70,10 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 		return errors.New("error including the JSON in the petition")
 	}
 
-	io.Copy(fw, strings.NewReader(string(JobJSON)))
+	_, err = io.Copy(fw, strings.NewReader(string(JobJSON)))
+	if err != nil {
+		return errors.New("error writing the JSON in the petition")
+	}
 
 	switch filepath.Ext(fd.Name()) {
 	case ".pdf":
@@ -83,7 +86,10 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 		return errors.New("error including the file in the petition")
 	}
 
-	io.Copy(fw, fd)
+	_, err = io.Copy(fw, fd)
+	if err != nil {
+		return errors.New("error writing the file in the petition")
+	}
 
 	writer.Close()
 

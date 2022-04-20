@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"backend/pkg/types"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/hschendel/stl"
 )
@@ -82,4 +85,25 @@ func ValidateUploadInfo(info string) error {
 	default:
 		return errors.New("invalid info requested")
 	}
+}
+
+// DevicesToPublicJSON receives a Device slice and returns its JSON representation,
+// including only the public information: Name and , if present, model
+func DevicesToPublicJSON(devices []types.Device) []byte {
+	var devicesJSON []string
+
+	for _, device := range devices {
+		// Device objects should always have Name but Model can be nil
+		if device.Name == "" {
+			continue
+		}
+		if device.Model != "" {
+			s := fmt.Sprintf("{\"Name\":\"%v\",\"Model\":\"%v\"}", device.Name, device.Model)
+			devicesJSON = append(devicesJSON, s)
+			continue
+		}
+		s := fmt.Sprintf("{\"Name\":\"%v\"}", device.Name)
+		devicesJSON = append(devicesJSON, s)
+	}
+	return []byte("[" + strings.Join(devicesJSON, ",") + "]")
 }
