@@ -63,6 +63,22 @@ func (mr *MockDatabaseMockRecorder) DeviceExistWithNameAndIP(arg0, arg1 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeviceExistWithNameAndIP", reflect.TypeOf((*MockDatabase)(nil).DeviceExistWithNameAndIP), arg0, arg1)
 }
 
+// DeviceIPAndUUIDFromName mocks base method.
+func (m *MockDatabase) DeviceIPAndUUIDFromName(arg0 string) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeviceIPAndUUIDFromName", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DeviceIPAndUUIDFromName indicates an expected call of DeviceIPAndUUIDFromName.
+func (mr *MockDatabaseMockRecorder) DeviceIPAndUUIDFromName(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeviceIPAndUUIDFromName", reflect.TypeOf((*MockDatabase)(nil).DeviceIPAndUUIDFromName), arg0)
+}
+
 // DeviceIPFromName mocks base method.
 func (m *MockDatabase) DeviceIPFromName(arg0 string) (string, error) {
 	m.ctrl.T.Helper()

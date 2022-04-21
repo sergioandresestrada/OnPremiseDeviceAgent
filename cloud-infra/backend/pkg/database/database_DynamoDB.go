@@ -204,6 +204,44 @@ func (db *DynamoDB) DeviceIPFromName(name string) (string, error) {
 
 }
 
+// DeviceIPAndUUIDFromName receives a name and returns its IP address if exists, and an empty string otherwise.
+// Returns a non-nil error if there's one during the execution and nil otherwise
+func (db *DynamoDB) DeviceIPAndUUIDFromName(name string) (string, string, error) {
+	expr, err := expression.NewBuilder().WithFilter(
+		expression.Equal(expression.Name("Name"), expression.Value(name)),
+	).Build()
+	if err != nil {
+		err = fmt.Errorf("error while building the expression: %w", err)
+		return "", "", err
+	}
+
+	out, err := db.dynamoDBClient.Scan(context.TODO(), &dynamodb.ScanInput{
+		TableName:                 aws.String(db.DevicesTableName),
+		FilterExpression:          expr.Filter(),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+	})
+
+	if err != nil {
+		err = fmt.Errorf("error while scanning the DB: %w", err)
+		return "", "", err
+	}
+
+	if len(out.Items) == 0 {
+		return "", "", nil
+	}
+
+	device := types.Device{}
+	err = attributevalue.UnmarshalMap(out.Items[0], &device)
+	if err != nil {
+		err = fmt.Errorf("error unmarshalling device info: %w", err)
+		return "", "", err
+	}
+
+	return device.IP, device.DeviceUUID, nil
+
+}
+
 // DeleteDeviceFromUUID receives a UUID and deletes the correspoding device from the database
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) DeleteDeviceFromUUID(UUID string) error {

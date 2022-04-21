@@ -66,20 +66,23 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	deviceIP, deviceUUID, err := s.database.DeviceIPAndUUIDFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
 		return
 	}
 
-	if deviceIP == "" {
+	if deviceIP == "" || deviceUUID == "" {
 		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
 
 	message.IPAddress = deviceIP
+	message.DeviceUUID = deviceUUID
+
+	message.MessageUUID = uuid.NewString()
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
@@ -136,20 +139,21 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	deviceIP, deviceUUID, err := s.database.DeviceIPAndUUIDFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
 		return
 	}
 
-	if deviceIP == "" {
+	if deviceIP == "" || deviceUUID == "" {
 		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
 
 	message.IPAddress = deviceIP
+	message.DeviceUUID = deviceUUID
 
 	file, fileHeader, err := r.FormFile("file")
 
@@ -179,6 +183,8 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		utils.ServerError(w)
 		return
 	}
+
+	message.MessageUUID = uuid.NewString()
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
@@ -234,20 +240,21 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	deviceIP, deviceUUID, err := s.database.DeviceIPAndUUIDFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
 		return
 	}
 
-	if deviceIP == "" {
+	if deviceIP == "" || deviceUUID == "" {
 		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
 
 	message.IPAddress = deviceIP
+	message.DeviceUUID = deviceUUID
 
 	err = utils.ValidateUploadInfo(message.UploadInfo)
 	if err != nil {
@@ -261,6 +268,8 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Device to request info from: %v\n", message.IPAddress)
 
 	message.UploadURL = s.serverURL + "/upload" + message.UploadInfo
+
+	message.MessageUUID = uuid.NewString()
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {

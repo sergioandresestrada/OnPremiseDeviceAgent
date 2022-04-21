@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/hschendel/stl"
 )
@@ -106,4 +107,9 @@ func DevicesToPublicJSON(devices []types.Device) []byte {
 		devicesJSON = append(devicesJSON, s)
 	}
 	return []byte("[" + strings.Join(devicesJSON, ",") + "]")
+}
+
+// GetTimestamp returns the number of milliseconds elapsed since January 1, 1970 UTC.
+func GetTimestamp() int64 {
+	return time.Now().UnixMilli()
 }
