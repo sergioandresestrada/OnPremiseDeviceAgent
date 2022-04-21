@@ -1,11 +1,13 @@
 package service
 
 import (
+	"On-Premise/pkg/config"
 	objstorage "On-Premise/pkg/obj_storage"
 	"On-Premise/pkg/queue"
 	"On-Premise/pkg/types"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // Message is just a reference to type Message in package types so that the usage is shorter
@@ -44,22 +46,7 @@ func (s *Service) Run() {
 				continue
 			}
 
-			switch parsedMessage.Type {
-			case "HEARTBEAT":
-				err = s.Heartbeat(parsedMessage)
-			case "JOB":
-				err = s.Job(parsedMessage)
-			case "UPLOAD":
-				err = s.Upload(parsedMessage)
-			default:
-				fmt.Println("The received message is invalid")
-				continue
-			}
-
-			if err != nil {
-				fmt.Printf("There was an error processing the message: %v\n", err)
-				continue
-			}
+			go s.processMessage(parsedMessage)
 
 			err = s.queue.RemoveMessage(queueMsg)
 			if err != nil {
@@ -67,8 +54,40 @@ func (s *Service) Run() {
 				continue
 			}
 
-			fmt.Printf("Message was processed and deleted successfully\n\n")
+			fmt.Printf("Message was read and deleted successfully\n\n")
 		}
 
+	}
+}
+
+func (s *Service) processMessage(msg Message) {
+
+	waitTime := config.InitialTimeBetweenRetries
+
+	for i := 0; i < config.NumberOfRetries; i++ {
+		var err error
+
+		switch msg.Type {
+		case "HEARTBEAT":
+			err = s.Heartbeat(msg)
+		case "JOB":
+			err = s.Job(msg)
+		case "UPLOAD":
+			err = s.Upload(msg)
+		default:
+			fmt.Println("The received message is invalid")
+			return
+		}
+
+		// if there was no error, we finished the processing
+		if err == nil {
+			break
+		}
+
+		// Otherwise, we log the error, wait the correspoding time and double it for next iteration
+		fmt.Printf("There was an error processing the message: %v\n", err)
+
+		time.Sleep(time.Duration(waitTime) * time.Second)
+		waitTime *= 2
 	}
 }
