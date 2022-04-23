@@ -31,3 +31,26 @@ type Device struct {
 	Name       string `json:"Name"`
 	Model      string `json:"Model,omitempty"`
 }
+
+// Response struct represents the information received from the On-Premise server about the outcome of a message
+type Response struct {
+	Result    string `json:"Result"`
+	Timestamp int64  `json:"Timestamp"`
+}
+
+// MessageDB struct represents the information about a message that is inserted into the DB
+type MessageDB struct {
+	DeviceUUID     string
+	MessageUUID    string
+	MessageType    string
+	AdditionalInfo string
+	Timestamp      int64
+}
+
+// MessageDB struct represents the information about a message that is inserted into the DB
+type ResultDB struct {
+	DeviceUUID  string
+	MessageUUID string
+	Result      string
+	Timestamp   int64
+}

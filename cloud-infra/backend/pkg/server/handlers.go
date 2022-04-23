@@ -91,6 +91,21 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	messageDb := types.MessageDB{
+		DeviceUUID:     deviceUUID,
+		MessageUUID:    message.MessageUUID,
+		MessageType:    "Heartbeat",
+		AdditionalInfo: message.Message,
+		Timestamp:      utils.GetTimestamp(),
+	}
+
+	err = s.database.InsertMessage(messageDb)
+	if err != nil {
+		fmt.Printf("Got an error inserting the message in the DB: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
 	err = s.queue.SendMessage(string(messageJSON))
 	if err != nil {
 		fmt.Printf("%v\n", err)
@@ -193,6 +208,21 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	messageDb := types.MessageDB{
+		DeviceUUID:     deviceUUID,
+		MessageUUID:    message.MessageUUID,
+		MessageType:    "Job",
+		AdditionalInfo: message.FileName,
+		Timestamp:      utils.GetTimestamp(),
+	}
+
+	err = s.database.InsertMessage(messageDb)
+	if err != nil {
+		fmt.Printf("Got an error inserting the message in the DB: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
 	err = s.queue.SendMessage(string(messageJSON))
 	if err != nil {
 		fmt.Printf("%v\n", err)
@@ -274,6 +304,21 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	messageDb := types.MessageDB{
+		DeviceUUID:     deviceUUID,
+		MessageUUID:    message.MessageUUID,
+		MessageType:    "Upload",
+		AdditionalInfo: message.UploadInfo,
+		Timestamp:      utils.GetTimestamp(),
+	}
+
+	err = s.database.InsertMessage(messageDb)
+	if err != nil {
+		fmt.Printf("Got an error inserting the message in the DB: %v\n", err)
 		utils.ServerError(w)
 		return
 	}
@@ -825,6 +870,72 @@ func (s *Server) NewDevice(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Device inserted successfully")
 
+}
+
+// ReceiveResponse is the handler used with POST /responses/{deviceUUID}/{messageUUID} endpoint
+// It will receive information about a response to the message and from the device received as URL parameters
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) ReceiveResponse(w http.ResponseWriter, r *http.Request) {
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["deviceUUID"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err = uuid.Parse(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Received device UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	messageUUID := mux.Vars(r)["messageUUID"]
+
+	if messageUUID == "" {
+		fmt.Printf("Missing message UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err = uuid.Parse(messageUUID)
+
+	if err != nil {
+		fmt.Printf("Received message UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	var response types.Response
+	err = json.Unmarshal(requestBody, &response)
+	if err != nil {
+		fmt.Println("Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if response.Result == "" || response.Timestamp == 0 {
+		fmt.Println("Missing fields in the body")
+		utils.BadRequest(w)
+		return
+	}
+
+	fmt.Println(response.Result, response.Timestamp)
 }
 
 // TestJobs is the test handler used with GET /testjobs endpoint

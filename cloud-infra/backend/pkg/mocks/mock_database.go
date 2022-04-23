@@ -138,6 +138,34 @@ func (mr *MockDatabaseMockRecorder) InsertDevice(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertDevice", reflect.TypeOf((*MockDatabase)(nil).InsertDevice), arg0)
 }
 
+// InsertMessage mocks base method.
+func (m *MockDatabase) InsertMessage(arg0 types.MessageDB) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertMessage", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertMessage indicates an expected call of InsertMessage.
+func (mr *MockDatabaseMockRecorder) InsertMessage(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertMessage", reflect.TypeOf((*MockDatabase)(nil).InsertMessage), arg0)
+}
+
+// InsertResult mocks base method.
+func (m *MockDatabase) InsertResult(arg0 types.ResultDB) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertResult", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertResult indicates an expected call of InsertResult.
+func (mr *MockDatabaseMockRecorder) InsertResult(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertResult", reflect.TypeOf((*MockDatabase)(nil).InsertResult), arg0)
+}
+
 // UpdateDevice mocks base method.
 func (m *MockDatabase) UpdateDevice(arg0 types.Device) error {
 	m.ctrl.T.Helper()

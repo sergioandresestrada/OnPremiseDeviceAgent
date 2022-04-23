@@ -37,6 +37,9 @@ func TestHeartbeat(t *testing.T) {
 	// We assume database never returns an error and always gives a valid IP and UUID back
 	mockDatabase.EXPECT().DeviceIPAndUUIDFromName(gomock.Any()).Return("127.0.0.1", "placeholderUUID", nil).AnyTimes()
 
+	// We assume database insert message never return an error
+	mockDatabase.EXPECT().InsertMessage(gomock.Any()).Return(nil).AnyTimes()
+
 	router := mux.NewRouter()
 
 	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
@@ -86,6 +89,9 @@ func TestJob(t *testing.T) {
 
 	// The mocked object storage will return nil as error when called with any values
 	mockObjStorage.EXPECT().UploadFile(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	// We assume database insert message never return an error
+	mockDatabase.EXPECT().InsertMessage(gomock.Any()).Return(nil).AnyTimes()
 
 	router := mux.NewRouter()
 
@@ -178,6 +184,9 @@ func TestUpload(t *testing.T) {
 
 	// The mocked queue will return nil as error when called with any value
 	mockQueue.EXPECT().SendMessage(gomock.Any()).Return(nil).AnyTimes()
+
+	// We assume database insert message never return an error
+	mockDatabase.EXPECT().InsertMessage(gomock.Any()).Return(nil).AnyTimes()
 
 	router := mux.NewRouter()
 

@@ -29,6 +29,9 @@ func (s *Server) Routes() {
 	s.router.HandleFunc("/devices/{uuid}", s.DeleteDevice).Methods("DELETE")
 	s.router.HandleFunc("/devices/{uuid}", s.UpdateDevice).Methods("PUT")
 
+	//Receives responses from the On Premise indicating the result of serving a message to the corresponding device
+	s.router.HandleFunc("/responses/{deviceUUID}/{messageUUID}", s.ReceiveResponse).Methods("OPTIONS", "POST")
+
 	// this are test handlers used to test UI without making unnecesary calls to AWS services
 	s.router.HandleFunc("/testjobs", s.TestJobs).Methods("GET", "OPTIONS")
 	s.router.HandleFunc("/testidentification", s.TestIdentification).Methods("GET", "OPTIONS")
