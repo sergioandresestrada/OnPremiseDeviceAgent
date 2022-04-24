@@ -954,6 +954,7 @@ func (s *Server) ReceiveResponse(w http.ResponseWriter, r *http.Request) {
 	err = s.database.InsertResult(resultDB)
 	if err != nil {
 		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
 	}
 
 	utils.OKRequest(w)

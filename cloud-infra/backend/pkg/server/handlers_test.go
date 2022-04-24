@@ -505,7 +505,8 @@ func TestNewDevice(t *testing.T) {
 		insertError        error
 		testName           string
 	}{
-		{[]byte(`{"IP":"127.0.0.1","Name":"devName"}`), "application/json", http.StatusBadRequest, true, nil, "Device already exists"},
+		{[]byte(`{"IP":"127.0.0.1","Name":"devName"}`), "application/json", http.StatusBadRequest, true, fmt.Errorf("Device already exists"), "Device already exists"},
+		{[]byte(`{"IP":"127.0.0.1","Name":"devName"}`), "application/json", http.StatusOK, false, nil, "Device inserted correctly"},
 	}
 
 	for i, tt := range testCasesDBinvolved {
@@ -525,4 +526,77 @@ func TestNewDevice(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReceiveResponse(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockQueue := mocks.NewMockQueue(mockCtrl)
+
+	mockObjStorage := mocks.NewMockObjStorage(mockCtrl)
+
+	mockDatabase := mocks.NewMockDatabase(mockCtrl)
+
+	router := mux.NewRouter()
+
+	server := NewServer(mockQueue, mockObjStorage, mockDatabase, router)
+	server.Routes()
+
+	var testCasesNoDBinvolved = []struct {
+		contentType        string
+		deviceUUID         string
+		messageUUID        string
+		body               []byte
+		expectedStatusCode int
+		testName           string
+	}{
+		{"text/plain", "placeholderDeviceUUID", "placeholderMessageUUID", []byte(`placeholder`), http.StatusBadRequest, "Invalid content type"},
+		{"application/json", "invalidDeviceUUID", "placeholderMessageUUID", []byte(`placeholder`), http.StatusBadRequest, "Invalid device UUID"},
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "invalidMessageUUID", []byte(`placeholder`), http.StatusBadRequest, "Invalid message UUID"},
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "111c4951-31ba-4f8c-bca8-b17528810ee9", []byte(`()!!)(""·!!))`), http.StatusBadRequest, "Invalid JSON provided as body"},
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "111c4951-31ba-4f8c-bca8-b17528810ee9", []byte(`{"Result":"SUCCESS"}`), http.StatusBadRequest, "Missing Timestamp in body"},
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "111c4951-31ba-4f8c-bca8-b17528810ee9", []byte(`{"Timestamp": 1650795291931}`), http.StatusBadRequest, "Missing Result in body"},
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "111c4951-31ba-4f8c-bca8-b17528810ee9", []byte(`{"Result":"SUCCESS", "Timestamp": "invalidTimestamp"}`), http.StatusBadRequest, "Invalid timestamp in body"},
+	}
+
+	for i, tt := range testCasesNoDBinvolved {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			url := "/responses" + "/" + tt.deviceUUID + "/" + tt.messageUUID
+			req := httptest.NewRequest("POST", url, bytes.NewBuffer(tt.body))
+			req.Header.Set("Content-Type", tt.contentType)
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+
+	var testCasesDBinvolved = []struct {
+		contentType        string
+		deviceUUID         string
+		messageUUID        string
+		body               []byte
+		expectedStatusCode int
+		insertError        error
+		testName           string
+	}{
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "111c4951-31ba-4f8c-bca8-b17528810ee9", []byte(`{"Result":"SUCCESS", "Timestamp": 1650795291931}`), http.StatusInternalServerError, fmt.Errorf("Server error"), "Error while inserting result"},
+		{"application/json", "111c4951-31ba-4f8c-bca8-b17528810ee9", "111c4951-31ba-4f8c-bca8-b17528810ee9", []byte(`{"Result":"SUCCESS", "Timestamp": 1650795291931}`), http.StatusOK, nil, "All good"}}
+
+	for i, tt := range testCasesDBinvolved {
+		t.Run(fmt.Sprintf("Test %v: %s", i, tt.testName), func(t *testing.T) {
+			url := "/responses" + "/" + tt.deviceUUID + "/" + tt.messageUUID
+			mockDatabase.EXPECT().InsertResult(gomock.Any()).Return(tt.insertError).Times(1)
+			req := httptest.NewRequest("POST", url, bytes.NewBuffer(tt.body))
+			req.Header.Set("Content-Type", tt.contentType)
+			w := httptest.NewRecorder()
+			server.router.ServeHTTP(w, req)
+			if w.Result().StatusCode != tt.expectedStatusCode {
+				t.Errorf("Expected code %v, got %v", tt.expectedStatusCode, w.Result().StatusCode)
+			}
+		})
+	}
+
 }
