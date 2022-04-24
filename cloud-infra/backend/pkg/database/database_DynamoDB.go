@@ -303,7 +303,20 @@ func (db *DynamoDB) InsertMessage(msg types.MessageDB) error {
 	return err
 }
 
-// TODO
+// InsertResult receives a types.ResultDB and inserts the message outcome information into the DB
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) InsertResult(result types.ResultDB) error {
-	return nil
+	_, err := db.dynamoDBClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName: aws.String(db.MessagesTableName),
+		Item: map[string]DynamoDBTypes.AttributeValue{
+			"DeviceUUID":  &DynamoDBTypes.AttributeValueMemberS{Value: result.DeviceUUID},
+			"Information": &DynamoDBTypes.AttributeValueMemberS{Value: "Message_" + result.MessageUUID + "_Result_" + strconv.FormatInt(result.Timestamp, 10)},
+			"Result":      &DynamoDBTypes.AttributeValueMemberS{Value: result.Result},
+			"Timestamp":   &DynamoDBTypes.AttributeValueMemberN{Value: strconv.FormatInt(result.Timestamp, 10)},
+		},
+	})
+	if err != nil {
+		err = fmt.Errorf("error while inserting message: %w", err)
+	}
+	return err
 }

@@ -5,8 +5,10 @@ import (
 	objstorage "On-Premise/pkg/obj_storage"
 	"On-Premise/pkg/queue"
 	"On-Premise/pkg/types"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -79,15 +81,43 @@ func (s *Service) processMessage(msg Message) {
 			return
 		}
 
-		// if there was no error, we finished the processing
+		// if there was no error, we finished the processing, check for a url to send response and do it if present
 		if err == nil {
+			if msg.ResultURL != "" {
+				s.sendMessageOutcome(msg, "SUCCESS")
+			}
 			break
 		}
 
-		// Otherwise, we log the error, wait the correspoding time and double it for next iteration
+		// Otherwise, we log the error, send the result, wait the correspoding time and double it for next iteration
 		fmt.Printf("There was an error processing the message: %v\n", err)
+
+		s.sendMessageOutcome(msg, fmt.Sprintf("FAILURE: %v", err))
 
 		time.Sleep(time.Duration(waitTime) * time.Second)
 		waitTime *= 2
+	}
+}
+
+func (s *Service) sendMessageOutcome(msg Message, result string) {
+
+	url := msg.ResultURL + "/" + msg.DeviceUUID + "/" + msg.MessageUUID
+
+	values := map[string]interface{}{
+		"Result":    result,
+		"Timestamp": time.Now().UnixMilli(),
+	}
+
+	json_data, err := json.Marshal(values)
+
+	if err != nil {
+		fmt.Println("Error creating the result JSON to send")
+		return
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(json_data))
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		fmt.Println("There was an error sending the result or the server responded with status code different to 200")
 	}
 }

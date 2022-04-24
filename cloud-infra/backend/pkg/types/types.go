@@ -14,6 +14,7 @@ type Message struct {
 	DeviceName  string `json:"DeviceName"`
 	DeviceUUID  string `json:"DeviceUUID,omitempty"`
 	MessageUUID string `json:"MeviceUUID,omitempty"`
+	ResultURL   string `json:"ResultURL,omitempty"`
 }
 
 // Information struct represents the names of the available files with information about the devices

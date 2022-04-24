@@ -14,6 +14,7 @@ type Message struct {
 	DeviceName  string `json:"DeviceName"`
 	DeviceUUID  string `json:"DeviceUUID,omitempty"`
 	MessageUUID string `json:"MeviceUUID,omitempty"`
+	ResultURL   string `json:"ResultURL,omitempty"`
 }
 
 // JobClient struct represent the struct that will be sent to devices when sending them a job

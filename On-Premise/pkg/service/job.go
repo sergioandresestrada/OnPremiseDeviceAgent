@@ -103,7 +103,11 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	rsp, _ := httpClient.Do(req)
+	rsp, err := httpClient.Do(req)
+
+	if err != nil {
+		return fmt.Errorf("Error while performing the request %v", err)
+	}
 
 	if rsp.StatusCode != http.StatusOK {
 		return fmt.Errorf("resquest failed with status code %v", rsp.StatusCode)

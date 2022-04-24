@@ -84,6 +84,8 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 
 	message.MessageUUID = uuid.NewString()
 
+	message.ResultURL = s.serverURL + "/responses"
+
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
@@ -201,6 +203,8 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 
 	message.MessageUUID = uuid.NewString()
 
+	message.ResultURL = s.serverURL + "/responses"
+
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
@@ -300,6 +304,8 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	message.UploadURL = s.serverURL + "/upload" + message.UploadInfo
 
 	message.MessageUUID = uuid.NewString()
+
+	message.ResultURL = s.serverURL + "/responses"
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
@@ -884,8 +890,9 @@ func (s *Server) ReceiveResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == "OPTIONS" {
-		utils.OKRequest(w)
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
 		return
 	}
 
@@ -935,7 +942,21 @@ func (s *Server) ReceiveResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(response.Result, response.Timestamp)
+	fmt.Printf("\nReceived response to message %v from device %v with outcome %v\n", messageUUID, deviceUUID, response.Result)
+
+	resultDB := types.ResultDB{
+		DeviceUUID:  deviceUUID,
+		MessageUUID: messageUUID,
+		Result:      response.Result,
+		Timestamp:   response.Timestamp,
+	}
+
+	err = s.database.InsertResult(resultDB)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+	}
+
+	utils.OKRequest(w)
 }
 
 // TestJobs is the test handler used with GET /testjobs endpoint
