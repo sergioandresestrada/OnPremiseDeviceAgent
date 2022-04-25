@@ -43,9 +43,11 @@ type Response struct {
 type MessageDB struct {
 	DeviceUUID     string
 	MessageUUID    string
-	MessageType    string
+	Type           string
 	AdditionalInfo string
 	Timestamp      int64
+	// this field is only used to read info from DynamoDB and not sent in JSON responses
+	Information string `json:"-"`
 }
 
 // MessageDB struct represents the information about a message that is inserted into the DB

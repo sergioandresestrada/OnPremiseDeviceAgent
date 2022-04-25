@@ -96,7 +96,7 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 	messageDb := types.MessageDB{
 		DeviceUUID:     deviceUUID,
 		MessageUUID:    message.MessageUUID,
-		MessageType:    "Heartbeat",
+		Type:           "Heartbeat",
 		AdditionalInfo: message.Message,
 		Timestamp:      utils.GetTimestamp(),
 	}
@@ -215,7 +215,7 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 	messageDb := types.MessageDB{
 		DeviceUUID:     deviceUUID,
 		MessageUUID:    message.MessageUUID,
-		MessageType:    "Job",
+		Type:           "Job",
 		AdditionalInfo: message.FileName,
 		Timestamp:      utils.GetTimestamp(),
 	}
@@ -317,7 +317,7 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 	messageDb := types.MessageDB{
 		DeviceUUID:     deviceUUID,
 		MessageUUID:    message.MessageUUID,
-		MessageType:    "Upload",
+		Type:           "Upload",
 		AdditionalInfo: message.UploadInfo,
 		Timestamp:      utils.GetTimestamp(),
 	}
@@ -958,6 +958,126 @@ func (s *Server) ReceiveResponse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.OKRequest(w)
+}
+
+// DeviceMessages is the handler used with GET /messages/{deviceUUID} endpoint
+// It will receive a deviceUUID and return all its messages information
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) DeviceMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["deviceUUID"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err := uuid.Parse(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Received device UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	messages, err := s.database.GetMessagesFromDevice(deviceUUID)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	messagesJSON, err := json.Marshal(messages)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(messagesJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the list of messages from device %v\n", deviceUUID)
+}
+
+// MessageResponses is the handler used with GET /responses/{messageUUID} endpoint
+// It will receive a messageUUID and return all its responses information
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) MessageResponses(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["deviceUUID"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err := uuid.Parse(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Received device UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	messageUUID := mux.Vars(r)["messageUUID"]
+
+	if messageUUID == "" {
+		fmt.Printf("Missing message UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err = uuid.Parse(messageUUID)
+
+	if err != nil {
+		fmt.Printf("Received message UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	responses, err := s.database.GetResponsesFromMessage(deviceUUID, messageUUID)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	responsesJSON, err := json.Marshal(responses)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(responsesJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	fmt.Printf("\nServed the list of responses from device %v and message %v\n", deviceUUID, messageUUID)
+
 }
 
 // TestJobs is the test handler used with GET /testjobs endpoint

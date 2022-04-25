@@ -25,4 +25,7 @@ type Database interface {
 
 	InsertMessage(types.MessageDB) error
 	InsertResult(types.ResultDB) error
+
+	GetMessagesFromDevice(string) ([]types.MessageDB, error)
+	GetResponsesFromMessage(string, string) ([]types.Response, error)
 }

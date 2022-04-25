@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -292,7 +293,7 @@ func (db *DynamoDB) InsertMessage(msg types.MessageDB) error {
 		Item: map[string]DynamoDBTypes.AttributeValue{
 			"DeviceUUID":     &DynamoDBTypes.AttributeValueMemberS{Value: msg.DeviceUUID},
 			"Information":    &DynamoDBTypes.AttributeValueMemberS{Value: "Message_" + msg.MessageUUID},
-			"Type":           &DynamoDBTypes.AttributeValueMemberS{Value: msg.MessageType},
+			"Type":           &DynamoDBTypes.AttributeValueMemberS{Value: msg.Type},
 			"AdditionalInfo": &DynamoDBTypes.AttributeValueMemberS{Value: msg.AdditionalInfo},
 			"Timestamp":      &DynamoDBTypes.AttributeValueMemberN{Value: strconv.FormatInt(msg.Timestamp, 10)},
 		},
@@ -310,7 +311,7 @@ func (db *DynamoDB) InsertResult(result types.ResultDB) error {
 		TableName: aws.String(db.MessagesTableName),
 		Item: map[string]DynamoDBTypes.AttributeValue{
 			"DeviceUUID":  &DynamoDBTypes.AttributeValueMemberS{Value: result.DeviceUUID},
-			"Information": &DynamoDBTypes.AttributeValueMemberS{Value: "Message_" + result.MessageUUID + "_Result_" + strconv.FormatInt(result.Timestamp, 10)},
+			"Information": &DynamoDBTypes.AttributeValueMemberS{Value: "Result_Message_" + result.MessageUUID + "_" + strconv.FormatInt(result.Timestamp, 10)},
 			"Result":      &DynamoDBTypes.AttributeValueMemberS{Value: result.Result},
 			"Timestamp":   &DynamoDBTypes.AttributeValueMemberN{Value: strconv.FormatInt(result.Timestamp, 10)},
 		},
@@ -319,4 +320,62 @@ func (db *DynamoDB) InsertResult(result types.ResultDB) error {
 		err = fmt.Errorf("error while inserting message: %w", err)
 	}
 	return err
+}
+
+// GetMessagesFromDevice receives a deviceUUID and returns an slice with the information from its the messages
+// Returns a non-nil error if there's one during the execution and nil otherwise
+func (db *DynamoDB) GetMessagesFromDevice(deviceUUID string) ([]types.MessageDB, error) {
+	out, err := db.dynamoDBClient.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:              aws.String(db.MessagesTableName),
+		KeyConditionExpression: aws.String("DeviceUUID = :deviceUUID and begins_with(Information, :prefix)"),
+		ExpressionAttributeValues: map[string]DynamoDBTypes.AttributeValue{
+			":deviceUUID": &DynamoDBTypes.AttributeValueMemberS{Value: deviceUUID},
+			":prefix":     &DynamoDBTypes.AttributeValueMemberS{Value: "Message_"},
+		},
+	})
+
+	if err != nil {
+		err = fmt.Errorf("error while retrieving messages: %w", err)
+		return nil, err
+	}
+
+	messages := []types.MessageDB{}
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &messages)
+	if err != nil {
+		err = fmt.Errorf("error unmarshalling messages info: %w", err)
+		return nil, err
+	}
+
+	for i := range messages {
+		messages[i].MessageUUID = strings.Split(messages[i].Information, "_")[1]
+	}
+
+	return messages, nil
+}
+
+func (db *DynamoDB) GetResponsesFromMessage(deviceUUID string, messageUUID string) ([]types.Response, error) {
+	out, err := db.dynamoDBClient.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:              aws.String(db.MessagesTableName),
+		KeyConditionExpression: aws.String("DeviceUUID = :deviceUUID and begins_with(Information, :prefix)"),
+		ExpressionAttributeValues: map[string]DynamoDBTypes.AttributeValue{
+			":deviceUUID": &DynamoDBTypes.AttributeValueMemberS{Value: deviceUUID},
+			":prefix":     &DynamoDBTypes.AttributeValueMemberS{Value: "Result_Message_" + messageUUID},
+		},
+	})
+
+	if err != nil {
+		err = fmt.Errorf("error while retrieving responses: %w", err)
+		return nil, err
+	}
+
+	responses := []types.Response{}
+
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &responses)
+	if err != nil {
+		err = fmt.Errorf("error unmarshalling responses info: %w", err)
+		return nil, err
+	}
+
+	return responses, nil
+
 }
