@@ -31,6 +31,7 @@ type Device struct {
 	IP         string `json:"IP"`
 	Name       string `json:"Name"`
 	Model      string `json:"Model,omitempty"`
+	LastResult string `json:"LastResult,omitempty"`
 }
 
 // Response struct represents the information received from the On-Premise server about the outcome of a message
@@ -46,6 +47,7 @@ type MessageDB struct {
 	Type           string
 	AdditionalInfo string
 	Timestamp      int64
+	LastResult     string
 	// this field is only used to read info from DynamoDB and not sent in JSON responses
 	Information string `json:"-"`
 }

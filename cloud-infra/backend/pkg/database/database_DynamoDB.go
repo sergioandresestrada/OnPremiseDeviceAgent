@@ -318,8 +318,43 @@ func (db *DynamoDB) InsertResult(result types.ResultDB) error {
 	})
 	if err != nil {
 		err = fmt.Errorf("error while inserting message: %w", err)
+		return err
 	}
-	return err
+
+	_, err = db.dynamoDBClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(db.DevicesTableName),
+		Key: map[string]DynamoDBTypes.AttributeValue{
+			"DeviceUUID": &DynamoDBTypes.AttributeValueMemberS{Value: result.DeviceUUID},
+		},
+		UpdateExpression: aws.String("set LastResult = :result"),
+		ExpressionAttributeValues: map[string]DynamoDBTypes.AttributeValue{
+			":result": &DynamoDBTypes.AttributeValueMemberS{Value: result.Result},
+		},
+	})
+
+	if err != nil {
+		err = fmt.Errorf("error while updating device last result: %w", err)
+		return err
+	}
+
+	_, err = db.dynamoDBClient.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+		TableName: aws.String(db.MessagesTableName),
+		Key: map[string]DynamoDBTypes.AttributeValue{
+			"DeviceUUID":  &DynamoDBTypes.AttributeValueMemberS{Value: result.DeviceUUID},
+			"Information": &DynamoDBTypes.AttributeValueMemberS{Value: "Message_" + result.MessageUUID},
+		},
+		UpdateExpression: aws.String("set LastResult = :result"),
+		ExpressionAttributeValues: map[string]DynamoDBTypes.AttributeValue{
+			":result": &DynamoDBTypes.AttributeValueMemberS{Value: result.Result},
+		},
+	})
+
+	if err != nil {
+		err = fmt.Errorf("error while updating message last result: %w", err)
+		return err
+	}
+
+	return nil
 }
 
 // GetMessagesFromDevice receives a deviceUUID and returns an slice with the information from its the messages
