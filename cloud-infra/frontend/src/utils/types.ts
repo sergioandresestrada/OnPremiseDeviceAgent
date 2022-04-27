@@ -279,3 +279,8 @@ export interface Message {
     LastResult: string;
 }
 
+export interface Response {
+    Result: string;
+    Timestamp: number;
+}
+

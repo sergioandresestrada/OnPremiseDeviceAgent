@@ -1,4 +1,4 @@
-import { Message } from "./types"
+import { Message, Response } from "./types"
 
 //export const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
 export const URL = "http://192.168.1.208:12345"
@@ -37,4 +37,8 @@ export function beautifyFileName(fn : string) : string {
  
 export function sortMessagesByNew(messages: Message[]) : Message[] {
     return messages.sort((a, b) => (a.Timestamp > b.Timestamp ? -1 : 1));
+}
+
+export function sortResponsesByNew(responses: Response[]) : Response[] {
+    return responses.sort((a, b) => (a.Timestamp > b.Timestamp ? -1 : 1))
 }

@@ -4,23 +4,33 @@ import { Alert, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row,
 import { Message } from "../utils/types"
 import { URL, sortMessagesByNew } from "../utils/utils"
 import MessageCard from "./MessageCard";
+import MessageDetailsModal from "./MessageDetailsModal";
 
 interface IMessageShow {
     messages: Message[],
     errorInFetch: boolean,
-    isLoading: boolean
+    isLoading: boolean,
+
+    showDetailsModal: boolean,
+    messageUUID: string
 }
 
 const initialState = {
     messages: [],
     errorInFetch: false,
-    isLoading: true
+    isLoading: true,
+    
+    showDetailsModal: false,
+    messageUUID: ''
 }
 
 class MessagesShow extends React.Component<{}, IMessageShow> {
     constructor(props: any) {
         super(props)
         this.state = initialState
+
+        this.showDetailsFromMessage = this.showDetailsFromMessage.bind(this)
+        this.detailsModalToggle = this.detailsModalToggle.bind(this)
     }
 
     componentDidMount() {
@@ -46,8 +56,22 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
         })
     }
 
+    showDetailsFromMessage(messageUUID: string){
+        this.setState({
+            showDetailsModal: true,
+            messageUUID: messageUUID
+        })
+    }
+
+    detailsModalToggle(){
+        console.log("en el toggle")
+        this.setState({
+            showDetailsModal: false,
+        })
+    }
+
     render() {
-        const { errorInFetch, isLoading } = this.state
+        const { errorInFetch, isLoading, showDetailsModal } = this.state
 
         /* Renders a modal while the messages are being requested */
         if (isLoading){
@@ -80,6 +104,32 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
             )
         }
 
+        let messagesByNew = sortMessagesByNew(this.state.messages)
+
+        // Shows the modal when the details button from some message was clicked
+        if (showDetailsModal) {
+            let path = window.location.pathname.split("/")
+            let deviceUUID = path[path.length-1]
+            return(
+                <div>
+                <MessageDetailsModal messageUUID={this.state.messageUUID} deviceUUID={deviceUUID} toggleFunction={this.detailsModalToggle}/>
+                {/* Show the messages in the background */}
+                <Container style={{marginTop: "2em"}}>
+                    <Row>
+                        {messagesByNew.map((message) => {
+                            return (
+                                <Col xl="4" md="6" sm="12" >
+                                    <MessageCard message={message} onClickDetailsButton={() => this.showDetailsFromMessage(message.MessageUUID)} />
+                                </Col>
+                            )
+                        })}
+                    </Row>
+                </Container>
+            </div>
+            )
+            
+        }
+
         if (this.state.messages.length === 0){
             return (
                 <Container style={{marginTop: "2em"}}>
@@ -88,7 +138,7 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
             )
         }
         
-        let messagesByNew = sortMessagesByNew(this.state.messages)
+        
 
         return (
             <Container style={{marginTop: "2em"}}>
@@ -96,7 +146,7 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
                     {messagesByNew.map((message) => {
                         return (
                             <Col xl="4" md="6" sm="12" >
-                                <MessageCard message={message} />
+                                <MessageCard message={message} onClickDetailsButton={() => this.showDetailsFromMessage(message.MessageUUID)} />
                             </Col>
                         )
                     })}
