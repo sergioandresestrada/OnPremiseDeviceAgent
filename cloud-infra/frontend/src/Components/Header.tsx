@@ -29,7 +29,11 @@ class Header extends React.Component<{}, IHeader>{
                     full
                     light
                 >
-                    <NavbarBrand style={{ color: "#0096D6", marginRight: "2em"}}>On-Premise Device Agent</NavbarBrand>
+                    <NavbarBrand>
+                        <img src="/hp_logo.ico" alt='HP logo' width={35}/>
+                        {" "}
+                        <Link to={'/'} style={{textDecoration:"none", color: "#0096D6"}}>On-Premise Device Agent</Link>
+                    </NavbarBrand>
                     <NavbarToggler onClick={this.toggle}/>
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav navbar>

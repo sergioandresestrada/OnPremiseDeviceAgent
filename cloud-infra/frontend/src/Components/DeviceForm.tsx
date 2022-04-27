@@ -1,7 +1,7 @@
 
 import React, { FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Button, Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from 'reactstrap';
+import { Button, Col, Container, Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from 'reactstrap';
 import { Device } from "../utils/types";
 import { URL, validateIP } from "../utils/utils";
 
@@ -263,55 +263,59 @@ class DeviceForm extends React.Component<PDeviceForm,IDeviceForm> {
         }
 
         return (
-            <div className='Form'>
-                <h5 style={{textAlign: 'center', color:'#0096D6', paddingBottom:'1em'}}>{(this.props.isNewDevice ? 'New' : 'Update') + " Device" }</h5>
-                
-                <FormRS onSubmit={this.props.isNewDevice? this.handleSubmitNew : this.handleSubmitUpdate}>
-                    <FormGroup>
-                        <Label for='deviceName'>Device Name</Label>
-                        <Input onChange={this.handleChangeName} type="text" id="deviceName" value={this.state.deviceName} required/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for="deviceIP">Device IP Address</Label>
-                        <Input id="deviceIP" value={this.state.deviceIP} onChange={this.handleChangeIP} required
-                                type="text" valid={validateIP(this.state.deviceIP)} invalid={!validateIP(this.state.deviceIP)}/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Label for='deviceModel'>Device Model</Label>
-                        <Input onChange={this.handleChangeModel} type="text" id="deviceModel" value={this.state.deviceModel}/>
-                    </FormGroup>
-                    <FormGroup>
-                        <Button type="submit" color="primary" outline style={{width:"100%"}}> {"Save " + (this.props.isNewDevice ? "new device" : "changes")}</Button>
-                    </FormGroup>
-                </FormRS>
+            <Container>
+                <Row>
+                    <Col className="Form" style={{maxWidth:"600px"}}>
+                        <h5 style={{textAlign: 'center', color:'#0096D6', paddingBottom:'1em'}}>{(this.props.isNewDevice ? 'New' : 'Update') + " Device" }</h5>
+                        
+                        <FormRS onSubmit={this.props.isNewDevice? this.handleSubmitNew : this.handleSubmitUpdate}>
+                            <FormGroup>
+                                <Label for='deviceName'>Device Name *</Label>
+                                <Input onChange={this.handleChangeName} type="text" id="deviceName" value={this.state.deviceName} required placeholder="Required"/>
+                            </FormGroup>
+                            <FormGroup>
+                                <Label for="deviceIP">Device IP Address *</Label>
+                                <Input id="deviceIP" value={this.state.deviceIP} onChange={this.handleChangeIP} required placeholder="Required"
+                                        type="text" valid={validateIP(this.state.deviceIP)} invalid={!validateIP(this.state.deviceIP)}/>
+                            </FormGroup>
+                            <FormGroup>
+                                <Label for='deviceModel'>Device Model</Label>
+                                <Input onChange={this.handleChangeModel} type="text" id="deviceModel" value={this.state.deviceModel}/>
+                            </FormGroup>
+                            <FormGroup>
+                                <Button type="submit" color="primary" outline style={{width:"100%"}}> {"Save " + (this.props.isNewDevice ? "new device" : "changes")}</Button>
+                            </FormGroup>
+                        </FormRS>
 
 
-                {/* Renders a modal stating that the device is being processed until
-                    response from server is received */}
-                {this.state.processing &&
-                <Modal centered isOpen={true}>
-                    <ModalHeader>Processing</ModalHeader>
-                    <ModalBody> 
-                        <Spinner/>
-                        {' '}
-                        Your Device is being processed, please wait
-                    </ModalBody>
-                </Modal>
-                }
+                        {/* Renders a modal stating that the device is being processed until
+                            response from server is received */}
+                        {this.state.processing &&
+                        <Modal centered isOpen={true}>
+                            <ModalHeader>Processing</ModalHeader>
+                            <ModalBody> 
+                                <Spinner/>
+                                {' '}
+                                Your Device is being processed, please wait
+                            </ModalBody>
+                        </Modal>
+                        }
 
-                {/* Renders a modal to inform about last HB submission outcome*/}
-                {this.state.submitOutcome !== '' &&
-                <Modal centered isOpen={true}>
-                    <ModalHeader>Outcome</ModalHeader>
-                    <ModalBody> 
-                        {this.state.submitOutcome}
-                    </ModalBody>
-                    <ModalFooter>
-                        <Link to="/devices" style={{ color: "#0096D6", textDecoration: "none" }}>OK!</Link>
-                    </ModalFooter>
-                </Modal>
-                }
-            </div>
+                        {/* Renders a modal to inform about last HB submission outcome*/}
+                        {this.state.submitOutcome !== '' &&
+                        <Modal centered isOpen={true}>
+                            <ModalHeader>Outcome</ModalHeader>
+                            <ModalBody> 
+                                {this.state.submitOutcome}
+                            </ModalBody>
+                            <ModalFooter>
+                                <Link to="/devices" style={{ color: "#0096D6", textDecoration: "none" }}>OK!</Link>
+                            </ModalFooter>
+                        </Modal>
+                        }
+                    </Col>
+                </Row>
+            </Container>
         )
     }
     

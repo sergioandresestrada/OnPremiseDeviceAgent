@@ -3,7 +3,7 @@ import React from 'react';
 import Heartbeat from './Heartbeat';
 import Job from './Job';
 import Upload from './Upload';
-import { Alert, Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Spinner} from 'reactstrap';
+import { Alert, Col, Container, Form as FormRS, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, Row, Spinner} from 'reactstrap';
 import '../App.css';
 import { DevicePublic } from '../utils/types';
 import { URL } from '../utils/utils';
@@ -94,36 +94,40 @@ class Form extends React.Component<{}, IJob>{
         }
 
         return(
-            <div className='Form'>
-                <FormRS>
-                    <FormGroup>
-                        <Label for='jobType'>Select the type of message to send</Label>
-                        <Input id='jobType' value={this.state.type} onChange={this.handleChangeType} type="select">
-                            {Object.keys(Type).map( i => {
-                                return <option key={i} value={i}>{i.charAt(0)+i.substring(1).toLowerCase()}</option>
-                            })}
-                        </Input>
-                    </FormGroup>
-                </FormRS>
-                {this.state.availableDevices.length === 0 &&
-                    <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
-                }
-                {this.state.availableDevices.length > 0 &&
-                    <div>
-                        {this.state.type === "HEARTBEAT" &&
-                            <Heartbeat devices={this.state.availableDevices}/>
-                        }
+            <Container>
+                <Row>
+                    <Col className='Form' style={{maxWidth:"600px"}}>
+                    <FormRS>
+                        <FormGroup>
+                            <Label for='jobType'>Select the type of message to send</Label>
+                            <Input id='jobType' value={this.state.type} onChange={this.handleChangeType} type="select">
+                                {Object.keys(Type).map( i => {
+                                    return <option key={i} value={i}>{i.charAt(0)+i.substring(1).toLowerCase()}</option>
+                                })}
+                            </Input>
+                        </FormGroup>
+                    </FormRS>
+                    {this.state.availableDevices.length === 0 &&
+                        <Alert color="warning">No devices available! <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>Go add some now.</Link></Alert>
+                    }
+                    {this.state.availableDevices.length > 0 &&
+                        <div>
+                            {this.state.type === "HEARTBEAT" &&
+                                <Heartbeat devices={this.state.availableDevices}/>
+                            }
 
-                        {this.state.type === "JOB" && 
-                            <Job devices={this.state.availableDevices}/>
-                        }
+                            {this.state.type === "JOB" && 
+                                <Job devices={this.state.availableDevices}/>
+                            }
 
-                        {this.state.type === "UPLOAD" &&
-                            <Upload devices={this.state.availableDevices}/>
-                        }
-                    </div>
-                }
-            </div>
+                            {this.state.type === "UPLOAD" &&
+                                <Upload devices={this.state.availableDevices}/>
+                            }
+                        </div>
+                    }
+                    </Col>
+                </Row>
+            </Container>
         )
     }
 }

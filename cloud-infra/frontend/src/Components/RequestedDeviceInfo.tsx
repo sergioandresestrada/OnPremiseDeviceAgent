@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Alert, Button, Modal, ModalBody, ModalFooter, ModalHeader, Spinner } from "reactstrap";
+import { Alert, Button, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, Row, Spinner } from "reactstrap";
 import { URL, beautifyFileName } from "../utils/utils"
 import '../App.css';
 import ShowIdentification from "./DeviceIdentificationRender";
@@ -93,30 +93,38 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
 
         if(this.state.information.hasOwnProperty("Jobs")){
             return(
-                <div className="DeviceInfoShow">
-                    <Alert color="primary">
-                        {fileName !== null ? "Loaded information: Jobs from device " + beautifyFileName(fileName) : ""}
-                    </Alert>
-                    <ShowJobs Jobs={this.state.information.Jobs} />
-                    <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>
-                        <Link to="/deviceInfoList" style={{color:"white", textDecoration: "none" }}>Go back to available information List</Link>
-                    </Button>
-                </div>
+                <Container>
+                    <Row>
+                        <Col className='DeviceInfoShow' style={{maxWidth:"800px"}}>
+                            <Alert color="primary">
+                                {fileName !== null ? "Loaded information: Jobs from device " + beautifyFileName(fileName) : ""}
+                            </Alert>
+                            <ShowJobs Jobs={this.state.information.Jobs} />
+                            <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>
+                                <Link to="/deviceInfoList" style={{color:"white", textDecoration: "none" }}>Go back to available information List</Link>
+                            </Button>
+                        </Col>
+                    </Row>
+                </Container>
             )
         }
         
         if(this.state.information.hasOwnProperty("Identification")){
             
             return(
-                <div className="DeviceInfoShow">
-                    <Alert color="primary">
-                        {fileName !== null ? "Loaded information: Identification from device " + beautifyFileName(fileName) : ""}
-                    </Alert>
-                    <ShowIdentification Identification={this.state.information.Identification}/>
-                    <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>
-                        <Link to="/deviceInfoList" style={{color:"white", textDecoration: "none" }}>Go back to available information List</Link>
-                    </Button>
-                </div>
+                <Container>
+                    <Row>
+                        <Col className='DeviceInfoShow' style={{maxWidth:"800px"}}>
+                            <Alert color="primary">
+                                {fileName !== null ? "Loaded information: Identification from device " + beautifyFileName(fileName) : ""}
+                            </Alert>
+                            <ShowIdentification Identification={this.state.information.Identification}/>
+                            <Button style={{ marginTop: '2rem', backgroundColor:"#0096D6"}}>
+                                <Link to="/deviceInfoList" style={{color:"white", textDecoration: "none" }}>Go back to available information List</Link>
+                            </Button>
+                        </Col>
+                    </Row>
+                </Container>
             )
         }
     }
