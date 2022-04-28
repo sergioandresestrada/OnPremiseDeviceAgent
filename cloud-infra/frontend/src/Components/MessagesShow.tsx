@@ -64,7 +64,6 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
     }
 
     detailsModalToggle(){
-        console.log("en el toggle")
         this.setState({
             showDetailsModal: false,
         })
@@ -118,7 +117,7 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
                     <Row>
                         {messagesByNew.map((message) => {
                             return (
-                                <Col xl="4" md="6" sm="12" >
+                                <Col xl="4" md="6" sm="12" key={message.MessageUUID}>
                                     <MessageCard message={message} onClickDetailsButton={() => this.showDetailsFromMessage(message.MessageUUID)} />
                                 </Col>
                             )
@@ -145,8 +144,8 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
                 <Row>
                     {messagesByNew.map((message) => {
                         return (
-                            <Col xl="4" md="6" sm="12" >
-                                <MessageCard message={message} onClickDetailsButton={() => this.showDetailsFromMessage(message.MessageUUID)} />
+                            <Col xl="4" md="6" sm="12" key={message.MessageUUID}>
+                                <MessageCard message={message} onClickDetailsButton={() => this.showDetailsFromMessage(message.MessageUUID)}/>
                             </Col>
                         )
                     })}

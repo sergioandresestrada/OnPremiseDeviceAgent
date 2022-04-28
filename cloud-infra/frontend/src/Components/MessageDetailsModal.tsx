@@ -53,12 +53,12 @@ class MessageDetailsModal extends React.Component<PMessageDetailsModal, IMessage
     renderResponse(response: Response) : JSX.Element {
         if (response.Result === "SUCCESS"){
             return(
-                <Alert color="success">SUCCESS at {(new Date(response.Timestamp)).toLocaleString()}</Alert> 
+                <Alert color="success" key={response.Timestamp}>SUCCESS at {(new Date(response.Timestamp)).toLocaleString()}</Alert> 
             )
         }
         
         return (
-            <Alert color="danger">{response.Result} at {(new Date(response.Timestamp)).toLocaleString()}</Alert> 
+            <Alert color="danger" key={response.Timestamp}>{response.Result} at {(new Date(response.Timestamp)).toLocaleString()}</Alert> 
         )
     }
 
