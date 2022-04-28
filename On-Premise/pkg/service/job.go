@@ -28,12 +28,13 @@ func (s *Service) Job(msg Message) error {
 		return err
 	}
 
-	fd, err := os.Create("onPremiseFiles/" + msg.FileName)
+	fd, err := os.CreateTemp("onPremiseFiles/", "")
 	if err != nil {
 		err = fmt.Errorf("error while creating the file: %w", err)
 		return err
 	}
-	defer fd.Close()
+
+	defer os.Remove(fd.Name())
 
 	err = s.objStorage.DownloadFile(msg, fd)
 	if err != nil {
@@ -45,12 +46,12 @@ func (s *Service) Job(msg Message) error {
 	jobToClient.FileName = msg.FileName
 	jobToClient.Material = msg.Material
 
-	err = sendJobToClient(jobToClient, fd, msg.IPAddress)
+	err = sendJobToClient(jobToClient, fd, msg.FileName, msg.IPAddress)
 
 	return err
 }
 
-func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
+func sendJobToClient(job JobClient, fd *os.File, fileName string, clientIP string) error {
 	client := net.ParseIP(clientIP)
 	if client == nil {
 		return errors.New("invalid client IP")
@@ -75,11 +76,11 @@ func sendJobToClient(job JobClient, fd *os.File, clientIP string) error {
 		return errors.New("error writing the JSON in the petition")
 	}
 
-	switch filepath.Ext(fd.Name()) {
+	switch filepath.Ext(fileName) {
 	case ".pdf":
-		fw, err = customCreateFormFile(writer, "file", fd.Name(), "application/pdf")
+		fw, err = customCreateFormFile(writer, "file", fileName, "application/pdf")
 	default:
-		fw, err = writer.CreateFormFile("file", fd.Name())
+		fw, err = writer.CreateFormFile("file", fileName)
 	}
 
 	if err != nil {
