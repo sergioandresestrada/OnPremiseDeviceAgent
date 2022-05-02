@@ -357,7 +357,7 @@ func (db *DynamoDB) InsertResult(result types.ResultDB) error {
 	return nil
 }
 
-// GetMessagesFromDevice receives a deviceUUID and returns an slice with the information from its the messages
+// GetMessagesFromDevice receives a deviceUUID and returns an slice with the information from its messages
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) GetMessagesFromDevice(deviceUUID string) ([]types.MessageDB, error) {
 	out, err := db.dynamoDBClient.Query(context.TODO(), &dynamodb.QueryInput{
@@ -388,6 +388,8 @@ func (db *DynamoDB) GetMessagesFromDevice(deviceUUID string) ([]types.MessageDB,
 	return messages, nil
 }
 
+// GetResponsesFromMessage receives a deviceUUID and messageUUID and returns an slice with the information from its responses
+// Returns a non-nil error if there's one during the execution and nil otherwise
 func (db *DynamoDB) GetResponsesFromMessage(deviceUUID string, messageUUID string) ([]types.Response, error) {
 	out, err := db.dynamoDBClient.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:              aws.String(db.MessagesTableName),

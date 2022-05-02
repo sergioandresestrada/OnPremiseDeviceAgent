@@ -132,7 +132,7 @@ class MessagesShow extends React.Component<{}, IMessageShow> {
         if (this.state.messages.length === 0){
             return (
                 <Container style={{marginTop: "2em"}}>
-                    <Alert color="warning">No are no messages from this device! <Link to="/" style={{ color: "#0096D6", textDecoration: "none"}}>Go send some now.</Link></Alert>
+                    <Alert color="warning">There are no messages from this device! <Link to="/" style={{ color: "#0096D6", textDecoration: "none"}}>Go send some now.</Link></Alert>
                 </Container>
             )
         }

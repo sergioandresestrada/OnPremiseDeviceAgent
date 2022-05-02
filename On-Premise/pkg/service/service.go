@@ -108,14 +108,14 @@ func (s *Service) sendMessageOutcome(msg Message, result string) {
 		"Timestamp": time.Now().UnixMilli(),
 	}
 
-	json_data, err := json.Marshal(values)
+	jsonData, err := json.Marshal(values)
 
 	if err != nil {
 		fmt.Println("Error creating the result JSON to send")
 		return
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(json_data))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 
 	if err != nil || resp.StatusCode != http.StatusOK {
 		fmt.Println("There was an error sending the result or the server responded with status code different to 200")

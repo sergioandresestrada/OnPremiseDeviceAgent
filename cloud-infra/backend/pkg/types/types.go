@@ -52,7 +52,7 @@ type MessageDB struct {
 	Information string `json:"-"`
 }
 
-// MessageDB struct represents the information about a message that is inserted into the DB
+// ResultDB struct represents the information about a result that is inserted into the DB
 type ResultDB struct {
 	DeviceUUID  string
 	MessageUUID string
