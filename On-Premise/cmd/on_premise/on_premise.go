@@ -11,9 +11,16 @@ import (
 )
 
 func setUpService(config types.Config) {
-	queue := queue.NewQueueSQS()
+	messageQueue := queue.NewQueueSQS()
 	objStorage := objstorage.NewObjStorageS3()
-	service := service.NewService(queue, objStorage, config)
+	DLQ := queue.NewDeadLetterQueueSQS()
+	service := service.NewService(messageQueue, objStorage, DLQ, config)
+	service.Run()
+}
+
+func DeadLetterQueueService() {
+	DLQ := queue.NewDeadLetterQueueSQS()
+	service := service.NewDLQService(DLQ)
 	service.Run()
 }
 
@@ -21,8 +28,13 @@ func main() {
 
 	numberRetries := flag.Int("r", config.NumberOfRetries, "The maximum number of retries when processing a message")
 	secsBetweenRetries := flag.Int("s", config.InitialTimeBetweenRetries, "Time in seconds before the first retry (will double for successive retries)")
+	dlq := flag.Bool("dlq", false, "If set, reads, shows and deletes messages from the Dead Letter Queue")
 
 	flag.Parse()
+
+	if *dlq {
+		DeadLetterQueueService()
+	}
 
 	config := types.Config{
 		NumberOfRetries:           *numberRetries,

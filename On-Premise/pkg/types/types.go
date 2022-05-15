@@ -28,3 +28,13 @@ type Config struct {
 	NumberOfRetries           int
 	InitialTimeBetweenRetries int
 }
+
+// DLQ_Message struct represent the messages that will be inserted and read from the
+// Dead Letter Queue
+type DLQ_Message struct {
+	Type           string `json:"type"`
+	AdditionalInfo string `json:"AdditionalInfo"`
+	DeviceName     string `json:"DeviceName"`
+	LastResult     string `json:"LastResult"`
+	Timestamp      int64  `json:"Timestamp"`
+}
