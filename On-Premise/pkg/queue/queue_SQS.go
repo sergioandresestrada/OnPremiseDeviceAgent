@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	queueName = "test.fifo"
+	queueName = "messages.fifo"
 	waitTime  = 20
 )
 

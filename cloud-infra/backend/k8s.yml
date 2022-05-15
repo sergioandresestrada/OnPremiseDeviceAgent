@@ -30,7 +30,7 @@ spec:
                         value: "https://backend-sergioandresestrada.cloud.okteto.net"
 
                       - name: SQS_QUEUE_NAME
-                        value: "test.fifo"
+                        value: "messages.fifo"
 
                       - name: S3_BUCKET_NAME
                         value: "sergiotfgbucket"

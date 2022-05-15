@@ -22,3 +22,9 @@ type JobClient struct {
 	FileName string `json:"filename"`
 	Material string `json:"material"`
 }
+
+// Config struct represents the configurable values for the Service
+type Config struct {
+	NumberOfRetries           int
+	InitialTimeBetweenRetries int
+}

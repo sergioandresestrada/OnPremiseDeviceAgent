@@ -1,7 +1,6 @@
 package service
 
 import (
-	"On-Premise/pkg/config"
 	objstorage "On-Premise/pkg/obj_storage"
 	"On-Premise/pkg/queue"
 	"On-Premise/pkg/types"
@@ -18,18 +17,23 @@ type Message = types.Message
 // JobClient is just a reference to type JobClient in package types so that the usage is shorter
 type JobClient = types.JobClient
 
+// Config is just a reference to type Config in package types so that the usage is shorter
+type Config = types.Config
+
 // Service is the struct used to set up the On-Premise Server
 // It contains a queue and object storage implementation
 type Service struct {
 	queue      queue.Queue
 	objStorage objstorage.ObjStorage
+	config     Config
 }
 
 // NewService creates and returns the reference to a new Service struct
-func NewService(queue queue.Queue, objStorage objstorage.ObjStorage) *Service {
+func NewService(queue queue.Queue, objStorage objstorage.ObjStorage, config Config) *Service {
 	s := &Service{
 		queue:      queue,
 		objStorage: objStorage,
+		config:     config,
 	}
 	return s
 }
@@ -64,9 +68,9 @@ func (s *Service) Run() {
 
 func (s *Service) processMessage(msg Message) {
 
-	waitTime := config.InitialTimeBetweenRetries
+	waitTime := s.config.InitialTimeBetweenRetries
 
-	for i := 0; i < config.NumberOfRetries; i++ {
+	for i := 0; i < s.config.NumberOfRetries; i++ {
 		var err error
 
 		switch msg.Type {
