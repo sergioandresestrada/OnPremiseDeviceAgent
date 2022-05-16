@@ -106,12 +106,12 @@ func (s *Service) processMessage(msg Message) {
 		if i < s.config.NumberOfRetries-1 {
 			time.Sleep(time.Duration(waitTime) * time.Second)
 			waitTime *= 2
+		} else {
+			s.sendToDeadLetterQueue(msg, fmt.Sprintf("FAILURE: %v", err))
 		}
 
 	}
 
-	//If here, all retries failed
-	s.sendToDeadLetterQueue(msg, fmt.Sprintf("FAILURE: %v", err))
 }
 
 func (s *Service) sendMessageOutcome(msg Message, result string) {
