@@ -7,6 +7,12 @@
     margin-top: 100px;
     padding: 1em;
     text-align: justify;
+    border-radius: 15px;
+}
+
+.custom-background {
+    background-color: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(15px);
 }
 
 label {
@@ -23,6 +29,7 @@ label {
     padding: 1em;
     text-align: left;
     word-wrap: break-word;
+    border-radius: 15px;
 }
 
 .EditButton {
@@ -30,4 +37,27 @@ label {
 }
 .EditButton:hover {
     color : inherit
+}
+
+.landing-info {
+    border-radius: 0.5em;
+    margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1em;
+    text-align: justify;
+    border-radius: 15px;
+    /* backdrop-filter: blur(15px); */
+}
+
+.button-landing{
+    padding: 15px 50px 15px 50px;
+    background-color: #0096d6;
+    color: white;
+    white-space: nowrap;
+}
+.button-landing:hover {
+    color: white;
+    transform: scale(1.1);
+    filter: brightness(110%);
 }
