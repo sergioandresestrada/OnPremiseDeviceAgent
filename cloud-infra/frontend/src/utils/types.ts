@@ -268,5 +268,19 @@ export interface Device {
     Model: string;
     IP: string;
     DeviceUUID: string;
+    LastResult: string;
+}
+
+export interface Message {
+    MessageUUID: string;
+    Type: string;
+    AdditionalInfo: string;
+    Timestamp: number;
+    LastResult: string;
+}
+
+export interface Response {
+    Result: string;
+    Timestamp: number;
 }
 

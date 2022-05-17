@@ -66,24 +66,44 @@ func (s *Server) Heartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	deviceIP, deviceUUID, err := s.database.DeviceIPAndUUIDFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
 		return
 	}
 
-	if deviceIP == "" {
+	if deviceIP == "" || deviceUUID == "" {
 		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
 
 	message.IPAddress = deviceIP
+	message.DeviceUUID = deviceUUID
+
+	message.MessageUUID = uuid.NewString()
+
+	message.ResultURL = s.serverURL + "/responses"
 
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	messageDb := types.MessageDB{
+		DeviceUUID:     deviceUUID,
+		MessageUUID:    message.MessageUUID,
+		Type:           "Heartbeat",
+		AdditionalInfo: message.Message,
+		Timestamp:      utils.GetTimestamp(),
+	}
+
+	err = s.database.InsertMessage(messageDb)
+	if err != nil {
+		fmt.Printf("Got an error inserting the message in the DB: %v\n", err)
 		utils.ServerError(w)
 		return
 	}
@@ -136,20 +156,21 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	deviceIP, deviceUUID, err := s.database.DeviceIPAndUUIDFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
 		return
 	}
 
-	if deviceIP == "" {
+	if deviceIP == "" || deviceUUID == "" {
 		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
 
 	message.IPAddress = deviceIP
+	message.DeviceUUID = deviceUUID
 
 	file, fileHeader, err := r.FormFile("file")
 
@@ -180,9 +201,28 @@ func (s *Server) Job(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	message.MessageUUID = uuid.NewString()
+
+	message.ResultURL = s.serverURL + "/responses"
+
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	messageDb := types.MessageDB{
+		DeviceUUID:     deviceUUID,
+		MessageUUID:    message.MessageUUID,
+		Type:           "Job",
+		AdditionalInfo: message.FileName,
+		Timestamp:      utils.GetTimestamp(),
+	}
+
+	err = s.database.InsertMessage(messageDb)
+	if err != nil {
+		fmt.Printf("Got an error inserting the message in the DB: %v\n", err)
 		utils.ServerError(w)
 		return
 	}
@@ -234,20 +274,21 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deviceIP, err := s.database.DeviceIPFromName(message.DeviceName)
+	deviceIP, deviceUUID, err := s.database.DeviceIPAndUUIDFromName(message.DeviceName)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		utils.ServerError(w)
 		return
 	}
 
-	if deviceIP == "" {
+	if deviceIP == "" || deviceUUID == "" {
 		fmt.Printf("No device found with provided name\n")
 		utils.BadRequest(w)
 		return
 	}
 
 	message.IPAddress = deviceIP
+	message.DeviceUUID = deviceUUID
 
 	err = utils.ValidateUploadInfo(message.UploadInfo)
 	if err != nil {
@@ -262,9 +303,28 @@ func (s *Server) Upload(w http.ResponseWriter, r *http.Request) {
 
 	message.UploadURL = s.serverURL + "/upload" + message.UploadInfo
 
+	message.MessageUUID = uuid.NewString()
+
+	message.ResultURL = s.serverURL + "/responses"
+
 	messageJSON, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the queue: %v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	messageDb := types.MessageDB{
+		DeviceUUID:     deviceUUID,
+		MessageUUID:    message.MessageUUID,
+		Type:           "Upload",
+		AdditionalInfo: message.UploadInfo,
+		Timestamp:      utils.GetTimestamp(),
+	}
+
+	err = s.database.InsertMessage(messageDb)
+	if err != nil {
+		fmt.Printf("Got an error inserting the message in the DB: %v\n", err)
 		utils.ServerError(w)
 		return
 	}
@@ -815,6 +875,208 @@ func (s *Server) NewDevice(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	fmt.Println("Device inserted successfully")
+
+}
+
+// ReceiveResponse is the handler used with POST /responses/{deviceUUID}/{messageUUID} endpoint
+// It will receive information about a response to the message and from the device received as URL parameters
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) ReceiveResponse(w http.ResponseWriter, r *http.Request) {
+	requestBody, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Println("Error while reading request body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		fmt.Println("Invalid request content type")
+		utils.BadRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["deviceUUID"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err = uuid.Parse(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Received device UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	messageUUID := mux.Vars(r)["messageUUID"]
+
+	if messageUUID == "" {
+		fmt.Printf("Missing message UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err = uuid.Parse(messageUUID)
+
+	if err != nil {
+		fmt.Printf("Received message UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	var response types.Response
+	err = json.Unmarshal(requestBody, &response)
+	if err != nil {
+		fmt.Println("Invalid JSON provided as body")
+		utils.BadRequest(w)
+		return
+	}
+
+	if response.Result == "" || response.Timestamp == 0 {
+		fmt.Println("Missing fields in the body")
+		utils.BadRequest(w)
+		return
+	}
+
+	fmt.Printf("\nReceived response to message %v from device %v with outcome %v\n", messageUUID, deviceUUID, response.Result)
+
+	resultDB := types.ResultDB{
+		DeviceUUID:  deviceUUID,
+		MessageUUID: messageUUID,
+		Result:      response.Result,
+		Timestamp:   response.Timestamp,
+	}
+
+	err = s.database.InsertResult(resultDB)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+	}
+
+	utils.OKRequest(w)
+}
+
+// DeviceMessages is the handler used with GET /messages/{deviceUUID} endpoint
+// It will receive a deviceUUID and return all its messages information
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) DeviceMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["deviceUUID"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err := uuid.Parse(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Received device UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	messages, err := s.database.GetMessagesFromDevice(deviceUUID)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	messagesJSON, err := json.Marshal(messages)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(messagesJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+	fmt.Printf("\nServed the list of messages from device %v\n", deviceUUID)
+}
+
+// MessageResponses is the handler used with GET /responses/{messageUUID} endpoint
+// It will receive a messageUUID and return all its responses information
+// It will return status code 200, 400 or 500 as appropiate
+func (s *Server) MessageResponses(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.OKRequest(w)
+		return
+	}
+
+	deviceUUID := mux.Vars(r)["deviceUUID"]
+
+	if deviceUUID == "" {
+		fmt.Printf("Missing device UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err := uuid.Parse(deviceUUID)
+
+	if err != nil {
+		fmt.Printf("Received device UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	messageUUID := mux.Vars(r)["messageUUID"]
+
+	if messageUUID == "" {
+		fmt.Printf("Missing message UUID in request\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	_, err = uuid.Parse(messageUUID)
+
+	if err != nil {
+		fmt.Printf("Received message UUID has invalid format\n")
+		utils.BadRequest(w)
+		return
+	}
+
+	responses, err := s.database.GetResponsesFromMessage(deviceUUID, messageUUID)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	responsesJSON, err := json.Marshal(responses)
+	if err != nil {
+		fmt.Printf("Error while creating the JSON%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	_, err = w.Write(responsesJSON)
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		utils.ServerError(w)
+		return
+	}
+
+	fmt.Printf("\nServed the list of responses from device %v and message %v\n", deviceUUID, messageUUID)
 
 }
 

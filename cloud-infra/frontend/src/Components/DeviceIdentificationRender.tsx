@@ -1,4 +1,4 @@
-import { AccordionBody, AccordionHeader, AccordionItem, UncontrolledAccordion } from "reactstrap"
+import { AccordionBody, AccordionHeader, AccordionItem, Badge, UncontrolledAccordion } from "reactstrap"
 import { Identification } from "../utils/types"
 
 const ShowIdentification = ({Identification} : Identification.RootObject) => {
@@ -29,9 +29,12 @@ const ShowIdentification = ({Identification} : Identification.RootObject) => {
             </AccordionItem>
 
             <AccordionItem>
-                <AccordionHeader targetId="4">Materials</AccordionHeader>
+                <AccordionHeader targetId="4">
+                    Materials
+                    <Badge color="#0096D6" style={{marginInline:"1em", background:"#0096D6"}}>{Identification.Materials.Material.length}</Badge>    
+                </AccordionHeader>
                 <AccordionBody accordionId="4">
-                    {renderObject(Identification.Materials)}
+                    {renderMaterials(Identification.Materials)}
                 </AccordionBody>
             </AccordionItem>
         </UncontrolledAccordion>
@@ -70,6 +73,45 @@ const renderArray = (name: string, obj: Object): JSX.Element => {
                         <AccordionHeader targetId={i.toString()}>{name + " " + (i+1).toString()}</AccordionHeader>
                         <AccordionBody accordionId={i.toString()}>
                             {typeof val === "object" ? renderObject(val) : val}
+                        </AccordionBody>
+                    </AccordionItem>
+                )
+            })}
+        </UncontrolledAccordion>
+    )
+}
+
+const renderMaterials = (materials: Identification.Materials): JSX.Element => {
+    return(
+        <UncontrolledAccordion open="" style={{paddingTop:"1em", paddingBottom:"1em"}}>
+            {Object.values(materials.Material).map((val, i) => {
+                let material = val as Identification.Material
+                return (
+                    <AccordionItem>
+                        <AccordionHeader targetId={i.toString()}>{"Material " + (i+1).toString()}</AccordionHeader>
+                        <AccordionBody accordionId={i.toString()}>
+                            <ul>
+                                <li key="MaterialID">{"ID: " + material.ID}</li>
+                                <li key="Name">{"Name: " + (material.Name["@hasStringResource"] === "true" ? material.Name["#text"] : "Unknown")}</li>
+                                <li key="default">{"Default: " + material.Default}</li>
+                                <li key="BuildPlatform">
+                                    Build Platform:
+                                    <ul>
+                                        <li>
+                                            Usable Platform:
+                                            {renderObject(material.BuildPlatform.UsablePlatform)}
+                                        </li>
+                                        <li>
+                                            Platform Axes:
+                                            {renderObject(material.BuildPlatform.PlatformAxes)}
+                                        </li>
+                                    </ul> 
+                                </li>
+                                <li>
+                                    Links:
+                                    {renderObject(material.Links)}
+                                </li>
+                            </ul>
                         </AccordionBody>
                     </AccordionItem>
                 )

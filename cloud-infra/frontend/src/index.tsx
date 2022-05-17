@@ -10,6 +10,7 @@ import DeviceInfoList from './Components/DeviceInfoList';
 import RequestedDeviceInfo from './Components/RequestedDeviceInfo';
 import DeviceForm from './Components/DeviceForm';
 import DeviceList from './Components/DeviceList';
+import MessagesShow from './Components/MessagesShow';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -24,6 +25,7 @@ ReactDOM.render(
         <Route path="/devices/new" element={<DeviceForm {...{isNewDevice: true}}/>} />
         <Route path="/devices" element={<DeviceList/>} />
         <Route path="/devices/edit/:uuid" element={<DeviceForm {...{isNewDevice: false}} />} />
+        <Route path="/messages/:uuid" element={<MessagesShow/>} />
         <Route
           path="*"
           element={

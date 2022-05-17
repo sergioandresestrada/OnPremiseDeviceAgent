@@ -11,6 +11,7 @@ interface IDeviceList {
     isLoading: boolean,
 
     redirectEdit: boolean,
+    redirectMessages: boolean,
     DeviceUUID: string
 }
 
@@ -21,6 +22,7 @@ const initialState = {
     isLoading: true,
 
     redirectEdit: false,
+    redirectMessages: false,
     DeviceUUID: ''
 }
 
@@ -30,6 +32,9 @@ class DeviceList extends React.Component<{},IDeviceList> {
         this.state = initialState
         
         this.loadDevices = this.loadDevices.bind(this)
+        this.deleteDevice = this.deleteDevice.bind(this)
+        this.redirectToEdit = this.redirectToEdit.bind(this)
+
     }
 
     componentDidMount(){
@@ -81,13 +86,26 @@ class DeviceList extends React.Component<{},IDeviceList> {
         })
     }
 
+    redirectToMessages(uuid: string){
+        this.setState({
+            redirectMessages: true,
+            DeviceUUID: uuid
+        })
+    }
+
 
     render(){
-        const { errorInFetch, isLoading, redirectEdit } = this.state
+        const { errorInFetch, isLoading, redirectEdit, redirectMessages } = this.state
         
         if (redirectEdit){
             return (
                 <Navigate to={"/devices/edit/"+this.state.DeviceUUID}></Navigate>
+            )
+        }
+        
+        if (redirectMessages){
+            return (
+                <Navigate to={"/messages/"+this.state.DeviceUUID}></Navigate>
             )
         }
 
@@ -141,6 +159,7 @@ class DeviceList extends React.Component<{},IDeviceList> {
                             <th>Name</th>
                             <th>IP Address</th>
                             <th>Model</th>
+                            <th>Last message result</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -152,8 +171,12 @@ class DeviceList extends React.Component<{},IDeviceList> {
                                 <td>{entry.IP}</td>
                                 <td>{entry.Model}</td>
                                 <td>
+                                    {entry.LastResult === undefined ? "Unknown" : entry.LastResult.substring(0,7) }
+                                </td>
+                                <td>
                                     <Button color="primary" onClick={() => this.redirectToEdit(entry.DeviceUUID)} outline>Edit</Button>
                                     <Button color="danger" onClick={() => this.deleteDevice(entry.DeviceUUID)} outline style={{marginLeft: "1em"}}>Delete</Button>
+                                    <Button color="success" onClick={() => this.redirectToMessages(entry.DeviceUUID)} outline style={{marginLeft: "1em"}}>Messages</Button>
                                 </td>
                             </tr>
                         )

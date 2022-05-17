@@ -22,7 +22,9 @@ interface IJob{
     selectedDeviceName : string
 
     processingJob : boolean,
-    submitOutcome : string
+    submitOutcome : string,
+
+    inputFileKey: string
 }
 
 const initialState = {
@@ -32,7 +34,9 @@ const initialState = {
 
 
     processingJob : false,
-    submitOutcome : ''
+    submitOutcome : '',
+
+    inputFileKey: ''
 }
 
 class Job extends React.Component<PJob, IJob>{
@@ -137,7 +141,8 @@ class Job extends React.Component<PJob, IJob>{
     resetForm = () => {
         this.setState(initialState)
         this.setState({            
-            selectedDeviceName : this.props.devices[0].Name
+            selectedDeviceName : this.props.devices[0].Name,
+            inputFileKey: Date.now().toString()
         })
     }
 
@@ -156,7 +161,7 @@ class Job extends React.Component<PJob, IJob>{
                     <FormGroup>
                         <Label for="file">File</Label>
                         <Input id="file" name="file" type="file" 
-                            accept='.pdf, .stl' 
+                            accept='.pdf, .stl' key={this.state.inputFileKey}
                             onChange={this.handleChangeFile} required/>
                         <FormText>Select the file to send to the job</FormText>
                     </FormGroup>

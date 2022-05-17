@@ -115,8 +115,8 @@ class Heartbeat extends React.Component<PHeartbeat, IHeartbeat>{
             <div>
                 <FormRS onSubmit={this.handleSubmit}>
                     <FormGroup>
-                        <Label for='heartbeatMessage'>Message to send</Label>
-                        <Input onChange={this.handleChangeMessage} type="text" id="heartbeatMessage" value={this.state.message} required/>
+                        <Label for='heartbeatMessage'>Message to send *</Label>
+                        <Input onChange={this.handleChangeMessage} type="text" id="heartbeatMessage" value={this.state.message} required placeholder="Required"/>
                     </FormGroup>
                     <FormGroup>
                         <Label for='device'>Select the device</Label>

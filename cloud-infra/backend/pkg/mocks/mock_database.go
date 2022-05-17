@@ -63,6 +63,22 @@ func (mr *MockDatabaseMockRecorder) DeviceExistWithNameAndIP(arg0, arg1 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeviceExistWithNameAndIP", reflect.TypeOf((*MockDatabase)(nil).DeviceExistWithNameAndIP), arg0, arg1)
 }
 
+// DeviceIPAndUUIDFromName mocks base method.
+func (m *MockDatabase) DeviceIPAndUUIDFromName(arg0 string) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeviceIPAndUUIDFromName", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// DeviceIPAndUUIDFromName indicates an expected call of DeviceIPAndUUIDFromName.
+func (mr *MockDatabaseMockRecorder) DeviceIPAndUUIDFromName(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeviceIPAndUUIDFromName", reflect.TypeOf((*MockDatabase)(nil).DeviceIPAndUUIDFromName), arg0)
+}
+
 // DeviceIPFromName mocks base method.
 func (m *MockDatabase) DeviceIPFromName(arg0 string) (string, error) {
 	m.ctrl.T.Helper()
@@ -108,6 +124,36 @@ func (mr *MockDatabaseMockRecorder) GetDevices() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDevices", reflect.TypeOf((*MockDatabase)(nil).GetDevices))
 }
 
+// GetMessagesFromDevice mocks base method.
+func (m *MockDatabase) GetMessagesFromDevice(arg0 string) ([]types.MessageDB, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMessagesFromDevice", arg0)
+	ret0, _ := ret[0].([]types.MessageDB)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMessagesFromDevice indicates an expected call of GetMessagesFromDevice.
+func (mr *MockDatabaseMockRecorder) GetMessagesFromDevice(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessagesFromDevice", reflect.TypeOf((*MockDatabase)(nil).GetMessagesFromDevice), arg0)
+}
+
+// GetResponsesFromMessage mocks base method.
+func (m *MockDatabase) GetResponsesFromMessage(arg0, arg1 string) ([]types.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetResponsesFromMessage", arg0, arg1)
+	ret0, _ := ret[0].([]types.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetResponsesFromMessage indicates an expected call of GetResponsesFromMessage.
+func (mr *MockDatabaseMockRecorder) GetResponsesFromMessage(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetResponsesFromMessage", reflect.TypeOf((*MockDatabase)(nil).GetResponsesFromMessage), arg0, arg1)
+}
+
 // InsertDevice mocks base method.
 func (m *MockDatabase) InsertDevice(arg0 types.Device) error {
 	m.ctrl.T.Helper()
@@ -120,6 +166,34 @@ func (m *MockDatabase) InsertDevice(arg0 types.Device) error {
 func (mr *MockDatabaseMockRecorder) InsertDevice(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertDevice", reflect.TypeOf((*MockDatabase)(nil).InsertDevice), arg0)
+}
+
+// InsertMessage mocks base method.
+func (m *MockDatabase) InsertMessage(arg0 types.MessageDB) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertMessage", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertMessage indicates an expected call of InsertMessage.
+func (mr *MockDatabaseMockRecorder) InsertMessage(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertMessage", reflect.TypeOf((*MockDatabase)(nil).InsertMessage), arg0)
+}
+
+// InsertResult mocks base method.
+func (m *MockDatabase) InsertResult(arg0 types.ResultDB) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertResult", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertResult indicates an expected call of InsertResult.
+func (mr *MockDatabaseMockRecorder) InsertResult(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertResult", reflect.TypeOf((*MockDatabase)(nil).InsertResult), arg0)
 }
 
 // UpdateDevice mocks base method.
