@@ -17,7 +17,7 @@ type DLQ_SQS struct {
 	queueURL  *string
 }
 
-// NewQueueSQS creates and returns the reference to a new SQS struct
+// NewDeadLetterQueueSQS creates and returns the reference to a new NewDeadLetterQueueSQS struct
 func NewDeadLetterQueueSQS() *DLQ_SQS {
 	q := &DLQ_SQS{}
 	q.initialize()
@@ -36,7 +36,7 @@ func (dlq *DLQ_SQS) initialize() {
 
 	dlq.sqsClient = sqs.NewFromConfig(cfg)
 
-	queueNameString := aws.String(DeadLetterQueueName)
+	queueNameString := aws.String(deadLetterQueueName)
 
 	qInput := &sqs.GetQueueUrlInput{
 		QueueName: queueNameString,

@@ -18,7 +18,7 @@ func setUpService(config types.Config) {
 	service.Run()
 }
 
-func DeadLetterQueueService() {
+func setUpDeadLetterQueueService() {
 	DLQ := queue.NewDeadLetterQueueSQS()
 	service := service.NewDLQService(DLQ)
 	service.Run()
@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	if *dlq {
-		DeadLetterQueueService()
+		setUpDeadLetterQueueService()
 	}
 
 	config := types.Config{

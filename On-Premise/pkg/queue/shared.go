@@ -9,7 +9,7 @@ import (
 const (
 	queueName           = "messages.fifo"
 	waitTime            = 20
-	DeadLetterQueueName = "dlq.fifo"
+	deadLetterQueueName = "dlq.fifo"
 )
 
 // SQSGetLPMsgAPI defines the interface for the GetQueueUrl and ReceiveMessage functions.

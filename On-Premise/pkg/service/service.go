@@ -20,11 +20,11 @@ type JobClient = types.JobClient
 // Config is just a reference to type Config in package types so that the usage is shorter
 type Config = types.Config
 
-// DLQ_Message is just a reference to type DLQ_Message in package types so that the usage is shorter
-type DLQ_Message = types.DLQ_Message
+// DLQMessage is just a reference to type DLQMessage in package types so that the usage is shorter
+type DLQMessage = types.DLQMessage
 
 // Service is the struct used to set up the On-Premise Server
-// It contains a queue and object storage implementation
+// It contains a queue, a dead letter queue and object storage implementation and config values
 type Service struct {
 	queue      queue.Queue
 	objStorage objstorage.ObjStorage
@@ -149,7 +149,7 @@ func (s *Service) sendToDeadLetterQueue(msg Message, lastResult string) {
 		additionalInfo = msg.UploadInfo
 	}
 
-	DLQ_Message := &DLQ_Message{
+	DLQMessage := &DLQMessage{
 		Type:           msg.Type,
 		AdditionalInfo: additionalInfo,
 		DeviceName:     msg.DeviceName,
@@ -157,7 +157,7 @@ func (s *Service) sendToDeadLetterQueue(msg Message, lastResult string) {
 		Timestamp:      time.Now().UnixMilli(),
 	}
 
-	messageJSON, err := json.Marshal(DLQ_Message)
+	messageJSON, err := json.Marshal(DLQMessage)
 	if err != nil {
 		fmt.Printf("Got an error creating the message to the dead letter queue: %v\n", err)
 		return
