@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// DLQService is the struct used to set up the On-Premise Server while woring with the DLQ
+// DLQService is the struct used to set up the On-Premise Server while working with the DLQ
 // It contains a dead letter queue implementation
 type DLQService struct {
 	queue queue.DeadLetterQueue

@@ -51,7 +51,7 @@ func (dlq *DLQ_SQS) initialize() {
 
 }
 
-// ReceiveMessages used the queue to retrieve and return Messages from it
+// ReceiveMessages uses the queue to retrieve and return Messages from it
 // Returns nil if there's an error receiving messages
 func (dlq *DLQ_SQS) ReceiveMessages() []types.Message {
 
@@ -96,7 +96,7 @@ func (dlq *DLQ_SQS) RemoveMessage(msg types.Message) error {
 
 }
 
-// SendMessage receives and string and puts it in the correponding SQS URL
+// SendMessage receives an string and puts it in the correponding SQS URL
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (dlq *DLQ_SQS) SendMessage(s string) error {
 	sMInput := &sqs.SendMessageInput{

@@ -29,7 +29,7 @@ type Config struct {
 	InitialTimeBetweenRetries int
 }
 
-// DLQMessage struct represent the messages that will be inserted and read from the
+// DLQMessage struct represents the messages that will be inserted and read from the
 // Dead Letter Queue
 type DLQMessage struct {
 	Type           string `json:"type"`

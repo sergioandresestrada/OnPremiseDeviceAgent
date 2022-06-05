@@ -64,7 +64,7 @@ func (queue *SQS) initialize() {
 
 }
 
-// ReceiveMessages used the queue to retrieve and return Messages from it
+// ReceiveMessages uses the queue to retrieve and return Messages from it
 // Returns nil if there's an error receiving messages
 func (queue *SQS) ReceiveMessages() []types.Message {
 
@@ -78,7 +78,7 @@ func (queue *SQS) ReceiveMessages() []types.Message {
 	return resp.Messages
 }
 
-// RemoveMessage received a processed message and removes it from the queue
+// RemoveMessage receives a processed message and removes it from the queue
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (queue *SQS) RemoveMessage(msg types.Message) error {
 
