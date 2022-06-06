@@ -6,21 +6,26 @@ import (
 	"On-Premise/pkg/queue"
 	"On-Premise/pkg/types"
 	"flag"
+	"fmt"
 
 	"On-Premise/pkg/service"
 )
 
 func setUpService(config types.Config) {
+	fmt.Println("Setting up...")
 	messageQueue := queue.NewQueueSQS()
 	objStorage := objstorage.NewObjStorageS3()
 	DLQ := queue.NewDeadLetterQueueSQS()
 	service := service.NewService(messageQueue, objStorage, DLQ, config)
+	fmt.Println("Running correctly")
 	service.Run()
 }
 
 func setUpDeadLetterQueueService() {
+	fmt.Println("Setting up...")
 	DLQ := queue.NewDeadLetterQueueSQS()
 	service := service.NewDLQService(DLQ)
+	fmt.Println("Running correctly")
 	service.Run()
 }
 
