@@ -112,7 +112,7 @@ class DeviceForm extends React.Component<PDeviceForm,IDeviceForm> {
         let fetchOptions : object = {}
         let body : object = {}
 
-        if (this.state.deviceModel.trim() !== ""){
+        if (this.state.deviceModel !== undefined && this.state.deviceModel.trim() !== ""){
             body = {
                 DeviceUUID : this.state.editDeviceUUID,
                 Model : this.state.deviceModel,
