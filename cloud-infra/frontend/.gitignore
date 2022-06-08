@@ -25,3 +25,4 @@ yarn-error.log*
 /src/Processing.tsx
 /src/copiaForm
 .stignore
+.vercel
