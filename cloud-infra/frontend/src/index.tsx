@@ -11,6 +11,7 @@ import RequestedDeviceInfo from './Components/RequestedDeviceInfo';
 import DeviceForm from './Components/DeviceForm';
 import DeviceList from './Components/DeviceList';
 import MessagesShow from './Components/MessagesShow';
+import LandingPage from './Components/LandingPage';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -19,7 +20,8 @@ ReactDOM.render(
         <Header />
       </header>
       <Routes>
-        <Route path="/" element={<Form />} />
+        <Route path="/" element={LandingPage()} />
+        <Route path="/message" element={<Form />} />
         <Route path="/deviceInfoList" element={<DeviceInfoList/>} />
         <Route path="/deviceInfo" element={<RequestedDeviceInfo/>} />
         <Route path="/devices/new" element={<DeviceForm {...{isNewDevice: true}}/>} />

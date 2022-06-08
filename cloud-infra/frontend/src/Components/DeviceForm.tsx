@@ -112,7 +112,7 @@ class DeviceForm extends React.Component<PDeviceForm,IDeviceForm> {
         let fetchOptions : object = {}
         let body : object = {}
 
-        if (this.state.deviceModel.trim() !== ""){
+        if (this.state.deviceModel !== undefined && this.state.deviceModel.trim() !== ""){
             body = {
                 DeviceUUID : this.state.editDeviceUUID,
                 Model : this.state.deviceModel,
@@ -265,7 +265,7 @@ class DeviceForm extends React.Component<PDeviceForm,IDeviceForm> {
         return (
             <Container>
                 <Row>
-                    <Col className="Form" style={{maxWidth:"600px"}}>
+                    <Col className="Form custom-background" style={{maxWidth:"600px"}}>
                         <h5 style={{textAlign: 'center', color:'#0096D6', paddingBottom:'1em'}}>{(this.props.isNewDevice ? 'New' : 'Update') + " Device" }</h5>
                         
                         <FormRS onSubmit={this.props.isNewDevice? this.handleSubmitNew : this.handleSubmitUpdate}>

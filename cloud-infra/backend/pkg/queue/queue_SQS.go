@@ -72,7 +72,7 @@ func (queue *SQS) initialize() {
 	queue.queueURL = result.QueueUrl
 }
 
-// SendMessage receives and string and puts it in the correponding SQS URL
+// SendMessage receives an string and puts it in the correponding SQS URL
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (queue *SQS) SendMessage(s string) error {
 	sMInput := &sqs.SendMessageInput{

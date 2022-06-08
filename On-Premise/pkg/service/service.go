@@ -1,7 +1,6 @@
 package service
 
 import (
-	"On-Premise/pkg/config"
 	objstorage "On-Premise/pkg/obj_storage"
 	"On-Premise/pkg/queue"
 	"On-Premise/pkg/types"
@@ -18,18 +17,28 @@ type Message = types.Message
 // JobClient is just a reference to type JobClient in package types so that the usage is shorter
 type JobClient = types.JobClient
 
+// Config is just a reference to type Config in package types so that the usage is shorter
+type Config = types.Config
+
+// DLQMessage is just a reference to type DLQMessage in package types so that the usage is shorter
+type DLQMessage = types.DLQMessage
+
 // Service is the struct used to set up the On-Premise Server
-// It contains a queue and object storage implementation
+// It contains a queue, a dead letter queue and object storage implementation and config values
 type Service struct {
 	queue      queue.Queue
 	objStorage objstorage.ObjStorage
+	dlq        queue.DeadLetterQueue
+	config     Config
 }
 
 // NewService creates and returns the reference to a new Service struct
-func NewService(queue queue.Queue, objStorage objstorage.ObjStorage) *Service {
+func NewService(queue queue.Queue, objStorage objstorage.ObjStorage, dlq queue.DeadLetterQueue, config Config) *Service {
 	s := &Service{
 		queue:      queue,
 		objStorage: objStorage,
+		dlq:        dlq,
+		config:     config,
 	}
 	return s
 }
@@ -64,11 +73,11 @@ func (s *Service) Run() {
 
 func (s *Service) processMessage(msg Message) {
 
-	waitTime := config.InitialTimeBetweenRetries
+	waitTime := s.config.InitialTimeBetweenRetries
 
-	for i := 0; i < config.NumberOfRetries; i++ {
-		var err error
+	var err error
 
+	for i := 0; i < s.config.NumberOfRetries; i++ {
 		switch msg.Type {
 		case "HEARTBEAT":
 			err = s.Heartbeat(msg)
@@ -94,9 +103,15 @@ func (s *Service) processMessage(msg Message) {
 
 		s.sendMessageOutcome(msg, fmt.Sprintf("FAILURE: %v", err))
 
-		time.Sleep(time.Duration(waitTime) * time.Second)
-		waitTime *= 2
+		if i < s.config.NumberOfRetries-1 {
+			time.Sleep(time.Duration(waitTime) * time.Second)
+			waitTime *= 2
+		} else {
+			s.sendToDeadLetterQueue(msg, fmt.Sprintf("FAILURE: %v", err))
+		}
+
 	}
+
 }
 
 func (s *Service) sendMessageOutcome(msg Message, result string) {
@@ -120,4 +135,38 @@ func (s *Service) sendMessageOutcome(msg Message, result string) {
 	if err != nil || resp.StatusCode != http.StatusOK {
 		fmt.Println("There was an error sending the result or the server responded with status code different to 200")
 	}
+}
+
+func (s *Service) sendToDeadLetterQueue(msg Message, lastResult string) {
+	additionalInfo := ""
+
+	switch msg.Type {
+	case "HEARTBEAT":
+		additionalInfo = msg.Message
+	case "JOB":
+		additionalInfo = msg.FileName
+	case "UPLOAD":
+		additionalInfo = msg.UploadInfo
+	}
+
+	DLQMessage := &DLQMessage{
+		Type:           msg.Type,
+		AdditionalInfo: additionalInfo,
+		DeviceName:     msg.DeviceName,
+		LastResult:     lastResult,
+		Timestamp:      time.Now().UnixMilli(),
+	}
+
+	messageJSON, err := json.Marshal(DLQMessage)
+	if err != nil {
+		fmt.Printf("Got an error creating the message to the dead letter queue: %v\n", err)
+		return
+	}
+
+	err = s.dlq.SendMessage(string(messageJSON))
+	if err != nil {
+		fmt.Printf("Got an error sending the message to the dead letter queue: %v\n", err)
+		return
+	}
+
 }

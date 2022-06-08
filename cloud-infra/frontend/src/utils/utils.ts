@@ -1,7 +1,7 @@
 import { Message, Response } from "./types"
 
-//export const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
-export const URL = "http://192.168.1.208:12345"
+export const URL = "https://backend-sergioandresestrada.cloud.okteto.net"
+//export const URL = "http://192.168.1.208:12345"
 
 export function isValidFile(file: File) : boolean{
     var acceptedTypes = ["pdf", "stl"]

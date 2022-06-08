@@ -95,7 +95,7 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
             return(
                 <Container>
                     <Row>
-                        <Col className='DeviceInfoShow' style={{maxWidth:"800px"}}>
+                        <Col className='DeviceInfoShow custom-background' style={{maxWidth:"800px"}}>
                             <Alert color="primary">
                                 {fileName !== null ? "Loaded information: Jobs from device " + beautifyFileName(fileName) : ""}
                             </Alert>
@@ -114,7 +114,7 @@ class RequestedDeviceInfo extends React.Component<{},IRequestedDeviceInfo>{
             return(
                 <Container>
                     <Row>
-                        <Col className='DeviceInfoShow' style={{maxWidth:"800px"}}>
+                        <Col className='DeviceInfoShow custom-background' style={{maxWidth:"800px"}}>
                             <Alert color="primary">
                                 {fileName !== null ? "Loaded information: Identification from device " + beautifyFileName(fileName) : ""}
                             </Alert>

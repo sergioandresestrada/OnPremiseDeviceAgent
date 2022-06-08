@@ -10,11 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-const (
-	queueName = "test.fifo"
-	waitTime  = 20
-)
-
 // SQS defines the struct used to implement queue interface using AWS SQS
 // It contains an SQS client, the queue URL to be used, and the input struct to receive messages
 type SQS struct {
@@ -28,42 +23,6 @@ func NewQueueSQS() *SQS {
 	q := &SQS{}
 	q.initialize()
 	return q
-}
-
-// SQSGetLPMsgAPI defines the interface for the GetQueueUrl and ReceiveMessage functions.
-// We use this interface to test the functions using a mocked service.
-type SQSGetLPMsgAPI interface {
-	GetQueueUrl(ctx context.Context,
-		params *sqs.GetQueueUrlInput,
-		optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
-
-	ReceiveMessage(ctx context.Context,
-		params *sqs.ReceiveMessageInput,
-		optFns ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error)
-}
-
-// SQSDeleteMessageAPI defines the interface for the GetQueueUrl and DeleteMessage functions.
-// We use this interface to test the functions using a mocked service.
-type SQSDeleteMessageAPI interface {
-	GetQueueUrl(ctx context.Context,
-		params *sqs.GetQueueUrlInput,
-		optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
-
-	DeleteMessage(ctx context.Context,
-		params *sqs.DeleteMessageInput,
-		optFns ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error)
-}
-
-func getQueueURL(c context.Context, api SQSGetLPMsgAPI, input *sqs.GetQueueUrlInput) (*sqs.GetQueueUrlOutput, error) {
-	return api.GetQueueUrl(c, input)
-}
-
-func getLPMessages(c context.Context, api SQSGetLPMsgAPI, input *sqs.ReceiveMessageInput) (*sqs.ReceiveMessageOutput, error) {
-	return api.ReceiveMessage(c, input)
-}
-
-func removeMessage(c context.Context, api SQSDeleteMessageAPI, input *sqs.DeleteMessageInput) (*sqs.DeleteMessageOutput, error) {
-	return api.DeleteMessage(c, input)
 }
 
 func (queue *SQS) initialize() {
@@ -105,7 +64,7 @@ func (queue *SQS) initialize() {
 
 }
 
-// ReceiveMessages used the queue to retrieve and return Messages from it
+// ReceiveMessages uses the queue to retrieve and return Messages from it
 // Returns nil if there's an error receiving messages
 func (queue *SQS) ReceiveMessages() []types.Message {
 
@@ -119,7 +78,7 @@ func (queue *SQS) ReceiveMessages() []types.Message {
 	return resp.Messages
 }
 
-// RemoveMessage received a processed message and removes it from the queue
+// RemoveMessage receives a processed message and removes it from the queue
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (queue *SQS) RemoveMessage(msg types.Message) error {
 

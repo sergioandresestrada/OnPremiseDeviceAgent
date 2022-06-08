@@ -151,8 +151,8 @@ class DeviceList extends React.Component<{},IDeviceList> {
 
         return(
             <div>
-                <Container style={{marginTop: '2rem'}}>
-                <Button style={{marginBottom:'1.5em', backgroundColor:"#0096D6", width: "175px"}}><Link to="/devices/new" style={{ color: "white", textDecoration: "none"}}>Add new Device</Link></Button>
+                <Container style={{marginTop: '2rem'}} className="custom-background">
+                <Button style={{marginBottom:'1.5em', backgroundColor:"#0096D6", width: "175px"}} tag={Link} to="/devices/new">Add new Device</Button>
                 <Table hover>
                     <thead>
                         <tr>

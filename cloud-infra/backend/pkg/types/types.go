@@ -13,7 +13,7 @@ type Message struct {
 	UploadURL   string `json:"UploadURL,omitempty"`
 	DeviceName  string `json:"DeviceName"`
 	DeviceUUID  string `json:"DeviceUUID,omitempty"`
-	MessageUUID string `json:"MeviceUUID,omitempty"`
+	MessageUUID string `json:"MessageUUID,omitempty"`
 	ResultURL   string `json:"ResultURL,omitempty"`
 }
 

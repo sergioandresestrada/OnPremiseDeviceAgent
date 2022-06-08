@@ -14,7 +14,7 @@ import (
 // ClientPort is an arbitrary port used in which the device API is listening
 const ClientPort = "55555"
 
-// Upload receives a message, validate it fields and send it to the device using its API
+// Upload receives a message, validate it fields and sends it to the device using its API
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (s *Service) Upload(msg Message) error {
 	fmt.Println("Processing Upload")

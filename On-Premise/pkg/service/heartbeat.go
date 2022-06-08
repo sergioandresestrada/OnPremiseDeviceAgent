@@ -11,7 +11,7 @@ import (
 // ClientHBPort is an arbitrary port used in which the device API is listening
 const ClientHBPort = "55555"
 
-// Heartbeat receives a Message and prints it to stdout
+// Heartbeat receives a Message and sends it to the device
 // Returns a non-nil error if there's one during the execution and nil otherwise
 func (s *Service) Heartbeat(msg Message) error {
 	fmt.Println("Processing Heartbeat")

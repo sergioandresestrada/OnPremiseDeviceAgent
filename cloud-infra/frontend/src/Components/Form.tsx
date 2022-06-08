@@ -96,7 +96,7 @@ class Form extends React.Component<{}, IJob>{
         return(
             <Container>
                 <Row>
-                    <Col className='Form' style={{maxWidth:"600px"}}>
+                    <Col className='Form custom-background' style={{maxWidth:"600px"}}>
                     <FormRS>
                         <FormGroup>
                             <Label for='jobType'>Select the type of message to send</Label>

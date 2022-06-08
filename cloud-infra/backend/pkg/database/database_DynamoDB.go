@@ -17,7 +17,7 @@ import (
 )
 
 // DynamoDB defines the struct used to implement Database interface using AWS DynamoDB
-// It contains an DynamoDB client and the name of the tables to be used
+// It contains a DynamoDB client and the name of the tables to be used
 type DynamoDB struct {
 	dynamoDBClient    *dynamodb.Client
 	DevicesTableName  string

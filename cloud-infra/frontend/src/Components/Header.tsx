@@ -12,12 +12,21 @@ class Header extends React.Component<{}, IHeader>{
 
         this.state = { isOpen: false}
         this.toggle = this.toggle.bind(this)
+        this.closeNavbar = this.closeNavbar.bind(this)
     }
 
     toggle(){
         this.setState({
             isOpen: !this.state.isOpen
         })
+    }
+
+    closeNavbar(){
+        if (this.state.isOpen){
+            this.setState({
+                isOpen: false
+            })
+        }
     }
 
     render() {
@@ -27,6 +36,7 @@ class Header extends React.Component<{}, IHeader>{
                 expand='xl'
                 full
                 light
+                sticky='top'
             >
                 <NavbarBrand tag={Link} to="/" style={{textDecoration:"none", color: "#0096D6"}}>
                     <img src="/hp_logo.ico" alt='HP logo' width={35}/>
@@ -37,11 +47,11 @@ class Header extends React.Component<{}, IHeader>{
                 <Collapse isOpen={this.state.isOpen} navbar>
                     <Nav navbar>
                         <NavItem style={{ padding:"0.5rem"}}>
-                                <Link to="/" style={{ color: "#0096D6", textDecoration: "none"}}>New Message</Link>
+                                <Link to="/message" style={{ color: "#0096D6", textDecoration: "none"}} onClick={this.closeNavbar}>New Message</Link>
                         </NavItem>
                         
                         <NavItem style={{ color: "#0096D6", padding:"0.5rem", marginLeft: "0.5em"}}>
-                                <Link to="/deviceInfoList" style={{ color: "#0096D6", textDecoration: "none"}}>Requested Device Information</Link>
+                                <Link to="/deviceInfoList" style={{ color: "#0096D6", textDecoration: "none"}} onClick={this.closeNavbar}>Requested Device Information</Link>
                         </NavItem>
                         <UncontrolledDropdown inNavbar nav style={{ marginLeft: "0.5em"}}>
                             <DropdownToggle caret nav style={{ color: "#0096D6", textDecoration: "none", padding:"0.5rem"}}>
@@ -49,10 +59,10 @@ class Header extends React.Component<{}, IHeader>{
                             </DropdownToggle>
                             <DropdownMenu right>
                                 <DropdownItem>
-                                    <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}}>New</Link>
+                                    <Link to="/devices/new" style={{ color: "#0096D6", textDecoration: "none"}} onClick={this.closeNavbar}>New</Link>
                                 </DropdownItem>
                                 <DropdownItem>
-                                    <Link to="/devices" style={{ color: "#0096D6", textDecoration: "none"}}>List</Link>
+                                    <Link to="/devices" style={{ color: "#0096D6", textDecoration: "none"}} onClick={this.closeNavbar}>List</Link>
                                 </DropdownItem>
                             </DropdownMenu>
                         </UncontrolledDropdown>

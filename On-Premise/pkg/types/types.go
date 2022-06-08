@@ -13,7 +13,7 @@ type Message struct {
 	UploadURL   string `json:"UploadURL,omitempty"`
 	DeviceName  string `json:"DeviceName"`
 	DeviceUUID  string `json:"DeviceUUID,omitempty"`
-	MessageUUID string `json:"MeviceUUID,omitempty"`
+	MessageUUID string `json:"MessageUUID,omitempty"`
 	ResultURL   string `json:"ResultURL,omitempty"`
 }
 
@@ -21,4 +21,20 @@ type Message struct {
 type JobClient struct {
 	FileName string `json:"filename"`
 	Material string `json:"material"`
+}
+
+// Config struct represents the configurable values for the Service
+type Config struct {
+	NumberOfRetries           int
+	InitialTimeBetweenRetries int
+}
+
+// DLQMessage struct represents the messages that will be inserted and read from the
+// Dead Letter Queue
+type DLQMessage struct {
+	Type           string `json:"type"`
+	AdditionalInfo string `json:"AdditionalInfo"`
+	DeviceName     string `json:"DeviceName"`
+	LastResult     string `json:"LastResult"`
+	Timestamp      int64  `json:"Timestamp"`
 }

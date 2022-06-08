@@ -27,6 +27,7 @@ const MessageCard = ({ message, onClickDetailsButton }: MessageCardProps) => {
             color={outlineColor}
             style={{margin:"1em", border:"4px solid"}}
             key={message.MessageUUID}
+            className="custom-background"
         >
             <CardBody>
                 <CardTitle tag="h5">
